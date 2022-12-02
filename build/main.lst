@@ -1,0 +1,922 @@
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"main.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	htim3,72,4
+  16              		.section	.text.main,"ax",%progbits
+  17              		.align	1
+  18              		.global	main
+  19              		.arch armv7-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu softvfp
+  25              	main:
+  26              	.LFB65:
+  27              		.file 1 "./Core/Src/main.c"
+   1:./Core/Src/main.c **** /* USER CODE BEGIN Header */
+   2:./Core/Src/main.c **** /**
+   3:./Core/Src/main.c ****   ******************************************************************************
+   4:./Core/Src/main.c ****   * @file           : main.c
+   5:./Core/Src/main.c ****   * @brief          : Main program body
+   6:./Core/Src/main.c ****   ******************************************************************************
+   7:./Core/Src/main.c ****   * @attention
+   8:./Core/Src/main.c ****   *
+   9:./Core/Src/main.c ****   * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
+  10:./Core/Src/main.c ****   * All rights reserved.</center></h2>
+  11:./Core/Src/main.c ****   *
+  12:./Core/Src/main.c ****   * This software component is licensed by ST under BSD 3-Clause license,
+  13:./Core/Src/main.c ****   * the "License"; You may not use this file except in compliance with the
+  14:./Core/Src/main.c ****   * License. You may obtain a copy of the License at:
+  15:./Core/Src/main.c ****   *                        opensource.org/licenses/BSD-3-Clause
+  16:./Core/Src/main.c ****   *
+  17:./Core/Src/main.c ****   ******************************************************************************
+  18:./Core/Src/main.c ****   */
+  19:./Core/Src/main.c **** /* USER CODE END Header */
+  20:./Core/Src/main.c **** /* Includes ------------------------------------------------------------------*/
+  21:./Core/Src/main.c **** #include "main.h"
+  22:./Core/Src/main.c **** 
+  23:./Core/Src/main.c **** /* Private includes ----------------------------------------------------------*/
+  24:./Core/Src/main.c **** /* USER CODE BEGIN Includes */
+  25:./Core/Src/main.c **** 
+  26:./Core/Src/main.c **** /* USER CODE END Includes */
+  27:./Core/Src/main.c **** 
+  28:./Core/Src/main.c **** /* Private typedef -----------------------------------------------------------*/
+  29:./Core/Src/main.c **** /* USER CODE BEGIN PTD */
+  30:./Core/Src/main.c **** 
+  31:./Core/Src/main.c **** /* USER CODE END PTD */
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 2
+
+
+  32:./Core/Src/main.c **** 
+  33:./Core/Src/main.c **** /* Private define ------------------------------------------------------------*/
+  34:./Core/Src/main.c **** /* USER CODE BEGIN PD */
+  35:./Core/Src/main.c **** /* USER CODE END PD */
+  36:./Core/Src/main.c **** 
+  37:./Core/Src/main.c **** /* Private macro -------------------------------------------------------------*/
+  38:./Core/Src/main.c **** /* USER CODE BEGIN PM */
+  39:./Core/Src/main.c **** 
+  40:./Core/Src/main.c **** /* USER CODE END PM */
+  41:./Core/Src/main.c **** 
+  42:./Core/Src/main.c **** /* Private variables ---------------------------------------------------------*/
+  43:./Core/Src/main.c **** TIM_HandleTypeDef htim3;
+  44:./Core/Src/main.c **** 
+  45:./Core/Src/main.c **** /* USER CODE BEGIN PV */
+  46:./Core/Src/main.c **** 
+  47:./Core/Src/main.c **** /* USER CODE END PV */
+  48:./Core/Src/main.c **** 
+  49:./Core/Src/main.c **** /* Private function prototypes -----------------------------------------------*/
+  50:./Core/Src/main.c **** void SystemClock_Config(void);
+  51:./Core/Src/main.c **** static void MX_GPIO_Init(void);
+  52:./Core/Src/main.c **** static void MX_TIM3_Init(void);
+  53:./Core/Src/main.c **** /* USER CODE BEGIN PFP */
+  54:./Core/Src/main.c **** 
+  55:./Core/Src/main.c **** /* USER CODE END PFP */
+  56:./Core/Src/main.c **** 
+  57:./Core/Src/main.c **** /* Private user code ---------------------------------------------------------*/
+  58:./Core/Src/main.c **** /* USER CODE BEGIN 0 */
+  59:./Core/Src/main.c **** 
+  60:./Core/Src/main.c **** /* USER CODE END 0 */
+  61:./Core/Src/main.c **** 
+  62:./Core/Src/main.c **** /**
+  63:./Core/Src/main.c ****   * @brief  The application entry point.
+  64:./Core/Src/main.c ****   * @retval int
+  65:./Core/Src/main.c ****   */
+  66:./Core/Src/main.c **** int main(void)
+  67:./Core/Src/main.c **** {
+  28              		.loc 1 67 1
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 1, uses_anonymous_args = 0
+  32 0000 80B5     		push	{r7, lr}
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 00AF     		add	r7, sp, #0
+  37              		.cfi_def_cfa_register 7
+  68:./Core/Src/main.c ****   /* USER CODE BEGIN 1 */
+  69:./Core/Src/main.c **** 
+  70:./Core/Src/main.c ****   /* USER CODE END 1 */
+  71:./Core/Src/main.c **** 
+  72:./Core/Src/main.c ****   /* MCU Configuration--------------------------------------------------------*/
+  73:./Core/Src/main.c **** 
+  74:./Core/Src/main.c ****   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  75:./Core/Src/main.c ****   HAL_Init();
+  38              		.loc 1 75 3
+  39 0004 FFF7FEFF 		bl	HAL_Init
+  76:./Core/Src/main.c **** 
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 3
+
+
+  77:./Core/Src/main.c ****   /* USER CODE BEGIN Init */
+  78:./Core/Src/main.c **** 
+  79:./Core/Src/main.c ****   /* USER CODE END Init */
+  80:./Core/Src/main.c **** 
+  81:./Core/Src/main.c ****   /* Configure the system clock */
+  82:./Core/Src/main.c ****   SystemClock_Config();
+  40              		.loc 1 82 3
+  41 0008 FFF7FEFF 		bl	SystemClock_Config
+  83:./Core/Src/main.c **** 
+  84:./Core/Src/main.c ****   /* USER CODE BEGIN SysInit */
+  85:./Core/Src/main.c **** 
+  86:./Core/Src/main.c ****   /* USER CODE END SysInit */
+  87:./Core/Src/main.c **** 
+  88:./Core/Src/main.c ****   /* Initialize all configured peripherals */
+  89:./Core/Src/main.c ****   MX_GPIO_Init();
+  42              		.loc 1 89 3
+  43 000c FFF7FEFF 		bl	MX_GPIO_Init
+  90:./Core/Src/main.c ****   MX_TIM3_Init();
+  44              		.loc 1 90 3
+  45 0010 FFF7FEFF 		bl	MX_TIM3_Init
+  91:./Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+  92:./Core/Src/main.c **** 
+  93:./Core/Src/main.c ****   /* USER CODE END 2 */
+  94:./Core/Src/main.c **** 
+  95:./Core/Src/main.c ****   /* Infinite loop */
+  96:./Core/Src/main.c ****   /* USER CODE BEGIN WHILE */
+  97:./Core/Src/main.c ****   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  46              		.loc 1 97 3
+  47 0014 0021     		movs	r1, #0
+  48 0016 0A48     		ldr	r0, .L3
+  49 0018 FFF7FEFF 		bl	HAL_TIM_PWM_Start
+  50              	.L2:
+  98:./Core/Src/main.c ****   while (1)
+  99:./Core/Src/main.c ****   {
+ 100:./Core/Src/main.c **** 	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 100);
+  51              		.loc 1 100 4 discriminator 1
+  52 001c 084B     		ldr	r3, .L3
+  53 001e 1B68     		ldr	r3, [r3]
+  54 0020 6422     		movs	r2, #100
+  55 0022 5A63     		str	r2, [r3, #52]
+ 101:./Core/Src/main.c **** 	  HAL_Delay(1000);
+  56              		.loc 1 101 4 discriminator 1
+  57 0024 4FF47A70 		mov	r0, #1000
+  58 0028 FFF7FEFF 		bl	HAL_Delay
+ 102:./Core/Src/main.c **** 	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 1000);
+  59              		.loc 1 102 4 discriminator 1
+  60 002c 044B     		ldr	r3, .L3
+  61 002e 1B68     		ldr	r3, [r3]
+  62 0030 4FF47A72 		mov	r2, #1000
+  63 0034 5A63     		str	r2, [r3, #52]
+ 103:./Core/Src/main.c **** 	  HAL_Delay(1000);
+  64              		.loc 1 103 4 discriminator 1
+  65 0036 4FF47A70 		mov	r0, #1000
+  66 003a FFF7FEFF 		bl	HAL_Delay
+ 100:./Core/Src/main.c **** 	  HAL_Delay(1000);
+  67              		.loc 1 100 4 discriminator 1
+  68 003e EDE7     		b	.L2
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 4
+
+
+  69              	.L4:
+  70              		.align	2
+  71              	.L3:
+  72 0040 00000000 		.word	htim3
+  73              		.cfi_endproc
+  74              	.LFE65:
+  76              		.section	.text.SystemClock_Config,"ax",%progbits
+  77              		.align	1
+  78              		.global	SystemClock_Config
+  79              		.syntax unified
+  80              		.thumb
+  81              		.thumb_func
+  82              		.fpu softvfp
+  84              	SystemClock_Config:
+  85              	.LFB66:
+ 104:./Core/Src/main.c ****     /* USER CODE END WHILE */
+ 105:./Core/Src/main.c **** 
+ 106:./Core/Src/main.c ****     /* USER CODE BEGIN 3 */
+ 107:./Core/Src/main.c ****   }
+ 108:./Core/Src/main.c ****   /* USER CODE END 3 */
+ 109:./Core/Src/main.c **** }
+ 110:./Core/Src/main.c **** 
+ 111:./Core/Src/main.c **** /**
+ 112:./Core/Src/main.c ****   * @brief System Clock Configuration
+ 113:./Core/Src/main.c ****   * @retval None
+ 114:./Core/Src/main.c ****   */
+ 115:./Core/Src/main.c **** void SystemClock_Config(void)
+ 116:./Core/Src/main.c **** {
+  86              		.loc 1 116 1
+  87              		.cfi_startproc
+  88              		@ args = 0, pretend = 0, frame = 64
+  89              		@ frame_needed = 1, uses_anonymous_args = 0
+  90 0000 80B5     		push	{r7, lr}
+  91              		.cfi_def_cfa_offset 8
+  92              		.cfi_offset 7, -8
+  93              		.cfi_offset 14, -4
+  94 0002 90B0     		sub	sp, sp, #64
+  95              		.cfi_def_cfa_offset 72
+  96 0004 00AF     		add	r7, sp, #0
+  97              		.cfi_def_cfa_register 7
+ 117:./Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  98              		.loc 1 117 22
+  99 0006 07F11803 		add	r3, r7, #24
+ 100 000a 2822     		movs	r2, #40
+ 101 000c 0021     		movs	r1, #0
+ 102 000e 1846     		mov	r0, r3
+ 103 0010 FFF7FEFF 		bl	memset
+ 118:./Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 104              		.loc 1 118 22
+ 105 0014 3B1D     		adds	r3, r7, #4
+ 106 0016 0022     		movs	r2, #0
+ 107 0018 1A60     		str	r2, [r3]
+ 108 001a 5A60     		str	r2, [r3, #4]
+ 109 001c 9A60     		str	r2, [r3, #8]
+ 110 001e DA60     		str	r2, [r3, #12]
+ 111 0020 1A61     		str	r2, [r3, #16]
+ 119:./Core/Src/main.c **** 
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 5
+
+
+ 120:./Core/Src/main.c ****   /** Initializes the RCC Oscillators according to the specified parameters
+ 121:./Core/Src/main.c ****   * in the RCC_OscInitTypeDef structure.
+ 122:./Core/Src/main.c ****   */
+ 123:./Core/Src/main.c ****   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+ 112              		.loc 1 123 36
+ 113 0022 0223     		movs	r3, #2
+ 114 0024 BB61     		str	r3, [r7, #24]
+ 124:./Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 115              		.loc 1 124 30
+ 116 0026 0123     		movs	r3, #1
+ 117 0028 BB62     		str	r3, [r7, #40]
+ 125:./Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 118              		.loc 1 125 41
+ 119 002a 1023     		movs	r3, #16
+ 120 002c FB62     		str	r3, [r7, #44]
+ 126:./Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+ 121              		.loc 1 126 34
+ 122 002e 0023     		movs	r3, #0
+ 123 0030 7B63     		str	r3, [r7, #52]
+ 127:./Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 124              		.loc 1 127 7
+ 125 0032 07F11803 		add	r3, r7, #24
+ 126 0036 1846     		mov	r0, r3
+ 127 0038 FFF7FEFF 		bl	HAL_RCC_OscConfig
+ 128 003c 0346     		mov	r3, r0
+ 129              		.loc 1 127 6
+ 130 003e 002B     		cmp	r3, #0
+ 131 0040 01D0     		beq	.L6
+ 128:./Core/Src/main.c ****   {
+ 129:./Core/Src/main.c ****     Error_Handler();
+ 132              		.loc 1 129 5
+ 133 0042 FFF7FEFF 		bl	Error_Handler
+ 134              	.L6:
+ 130:./Core/Src/main.c ****   }
+ 131:./Core/Src/main.c ****   /** Initializes the CPU, AHB and APB buses clocks
+ 132:./Core/Src/main.c ****   */
+ 133:./Core/Src/main.c ****   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+ 135              		.loc 1 133 31
+ 136 0046 0F23     		movs	r3, #15
+ 137 0048 7B60     		str	r3, [r7, #4]
+ 134:./Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 135:./Core/Src/main.c ****   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+ 138              		.loc 1 135 34
+ 139 004a 0023     		movs	r3, #0
+ 140 004c BB60     		str	r3, [r7, #8]
+ 136:./Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 141              		.loc 1 136 35
+ 142 004e 0023     		movs	r3, #0
+ 143 0050 FB60     		str	r3, [r7, #12]
+ 137:./Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+ 144              		.loc 1 137 36
+ 145 0052 0023     		movs	r3, #0
+ 146 0054 3B61     		str	r3, [r7, #16]
+ 138:./Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 147              		.loc 1 138 36
+ 148 0056 0023     		movs	r3, #0
+ 149 0058 7B61     		str	r3, [r7, #20]
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 6
+
+
+ 139:./Core/Src/main.c **** 
+ 140:./Core/Src/main.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+ 150              		.loc 1 140 7
+ 151 005a 3B1D     		adds	r3, r7, #4
+ 152 005c 0021     		movs	r1, #0
+ 153 005e 1846     		mov	r0, r3
+ 154 0060 FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 155 0064 0346     		mov	r3, r0
+ 156              		.loc 1 140 6
+ 157 0066 002B     		cmp	r3, #0
+ 158 0068 01D0     		beq	.L8
+ 141:./Core/Src/main.c ****   {
+ 142:./Core/Src/main.c ****     Error_Handler();
+ 159              		.loc 1 142 5
+ 160 006a FFF7FEFF 		bl	Error_Handler
+ 161              	.L8:
+ 143:./Core/Src/main.c ****   }
+ 144:./Core/Src/main.c **** }
+ 162              		.loc 1 144 1
+ 163 006e 00BF     		nop
+ 164 0070 4037     		adds	r7, r7, #64
+ 165              		.cfi_def_cfa_offset 8
+ 166 0072 BD46     		mov	sp, r7
+ 167              		.cfi_def_cfa_register 13
+ 168              		@ sp needed
+ 169 0074 80BD     		pop	{r7, pc}
+ 170              		.cfi_endproc
+ 171              	.LFE66:
+ 173              		.section	.text.MX_TIM3_Init,"ax",%progbits
+ 174              		.align	1
+ 175              		.syntax unified
+ 176              		.thumb
+ 177              		.thumb_func
+ 178              		.fpu softvfp
+ 180              	MX_TIM3_Init:
+ 181              	.LFB67:
+ 145:./Core/Src/main.c **** 
+ 146:./Core/Src/main.c **** /**
+ 147:./Core/Src/main.c ****   * @brief TIM3 Initialization Function
+ 148:./Core/Src/main.c ****   * @param None
+ 149:./Core/Src/main.c ****   * @retval None
+ 150:./Core/Src/main.c ****   */
+ 151:./Core/Src/main.c **** static void MX_TIM3_Init(void)
+ 152:./Core/Src/main.c **** {
+ 182              		.loc 1 152 1
+ 183              		.cfi_startproc
+ 184              		@ args = 0, pretend = 0, frame = 56
+ 185              		@ frame_needed = 1, uses_anonymous_args = 0
+ 186 0000 80B5     		push	{r7, lr}
+ 187              		.cfi_def_cfa_offset 8
+ 188              		.cfi_offset 7, -8
+ 189              		.cfi_offset 14, -4
+ 190 0002 8EB0     		sub	sp, sp, #56
+ 191              		.cfi_def_cfa_offset 64
+ 192 0004 00AF     		add	r7, sp, #0
+ 193              		.cfi_def_cfa_register 7
+ 153:./Core/Src/main.c **** 
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 7
+
+
+ 154:./Core/Src/main.c ****   /* USER CODE BEGIN TIM3_Init 0 */
+ 155:./Core/Src/main.c **** 
+ 156:./Core/Src/main.c ****   /* USER CODE END TIM3_Init 0 */
+ 157:./Core/Src/main.c **** 
+ 158:./Core/Src/main.c ****   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+ 194              		.loc 1 158 26
+ 195 0006 07F12803 		add	r3, r7, #40
+ 196 000a 0022     		movs	r2, #0
+ 197 000c 1A60     		str	r2, [r3]
+ 198 000e 5A60     		str	r2, [r3, #4]
+ 199 0010 9A60     		str	r2, [r3, #8]
+ 200 0012 DA60     		str	r2, [r3, #12]
+ 159:./Core/Src/main.c ****   TIM_MasterConfigTypeDef sMasterConfig = {0};
+ 201              		.loc 1 159 27
+ 202 0014 07F12003 		add	r3, r7, #32
+ 203 0018 0022     		movs	r2, #0
+ 204 001a 1A60     		str	r2, [r3]
+ 205 001c 5A60     		str	r2, [r3, #4]
+ 160:./Core/Src/main.c ****   TIM_OC_InitTypeDef sConfigOC = {0};
+ 206              		.loc 1 160 22
+ 207 001e 3B1D     		adds	r3, r7, #4
+ 208 0020 0022     		movs	r2, #0
+ 209 0022 1A60     		str	r2, [r3]
+ 210 0024 5A60     		str	r2, [r3, #4]
+ 211 0026 9A60     		str	r2, [r3, #8]
+ 212 0028 DA60     		str	r2, [r3, #12]
+ 213 002a 1A61     		str	r2, [r3, #16]
+ 214 002c 5A61     		str	r2, [r3, #20]
+ 215 002e 9A61     		str	r2, [r3, #24]
+ 161:./Core/Src/main.c **** 
+ 162:./Core/Src/main.c ****   /* USER CODE BEGIN TIM3_Init 1 */
+ 163:./Core/Src/main.c **** 
+ 164:./Core/Src/main.c ****   /* USER CODE END TIM3_Init 1 */
+ 165:./Core/Src/main.c ****   htim3.Instance = TIM3;
+ 216              		.loc 1 165 18
+ 217 0030 2C4B     		ldr	r3, .L15
+ 218 0032 2D4A     		ldr	r2, .L15+4
+ 219 0034 1A60     		str	r2, [r3]
+ 166:./Core/Src/main.c ****   htim3.Init.Prescaler = 63;
+ 220              		.loc 1 166 24
+ 221 0036 2B4B     		ldr	r3, .L15
+ 222 0038 3F22     		movs	r2, #63
+ 223 003a 5A60     		str	r2, [r3, #4]
+ 167:./Core/Src/main.c ****   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+ 224              		.loc 1 167 26
+ 225 003c 294B     		ldr	r3, .L15
+ 226 003e 0022     		movs	r2, #0
+ 227 0040 9A60     		str	r2, [r3, #8]
+ 168:./Core/Src/main.c ****   htim3.Init.Period = 999;
+ 228              		.loc 1 168 21
+ 229 0042 284B     		ldr	r3, .L15
+ 230 0044 40F2E732 		movw	r2, #999
+ 231 0048 DA60     		str	r2, [r3, #12]
+ 169:./Core/Src/main.c ****   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+ 232              		.loc 1 169 28
+ 233 004a 264B     		ldr	r3, .L15
+ 234 004c 0022     		movs	r2, #0
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 8
+
+
+ 235 004e 1A61     		str	r2, [r3, #16]
+ 170:./Core/Src/main.c ****   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+ 236              		.loc 1 170 32
+ 237 0050 244B     		ldr	r3, .L15
+ 238 0052 0022     		movs	r2, #0
+ 239 0054 9A61     		str	r2, [r3, #24]
+ 171:./Core/Src/main.c ****   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+ 240              		.loc 1 171 7
+ 241 0056 2348     		ldr	r0, .L15
+ 242 0058 FFF7FEFF 		bl	HAL_TIM_Base_Init
+ 243 005c 0346     		mov	r3, r0
+ 244              		.loc 1 171 6
+ 245 005e 002B     		cmp	r3, #0
+ 246 0060 01D0     		beq	.L10
+ 172:./Core/Src/main.c ****   {
+ 173:./Core/Src/main.c ****     Error_Handler();
+ 247              		.loc 1 173 5
+ 248 0062 FFF7FEFF 		bl	Error_Handler
+ 249              	.L10:
+ 174:./Core/Src/main.c ****   }
+ 175:./Core/Src/main.c ****   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+ 250              		.loc 1 175 34
+ 251 0066 4FF48053 		mov	r3, #4096
+ 252 006a BB62     		str	r3, [r7, #40]
+ 176:./Core/Src/main.c ****   if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+ 253              		.loc 1 176 7
+ 254 006c 07F12803 		add	r3, r7, #40
+ 255 0070 1946     		mov	r1, r3
+ 256 0072 1C48     		ldr	r0, .L15
+ 257 0074 FFF7FEFF 		bl	HAL_TIM_ConfigClockSource
+ 258 0078 0346     		mov	r3, r0
+ 259              		.loc 1 176 6
+ 260 007a 002B     		cmp	r3, #0
+ 261 007c 01D0     		beq	.L11
+ 177:./Core/Src/main.c ****   {
+ 178:./Core/Src/main.c ****     Error_Handler();
+ 262              		.loc 1 178 5
+ 263 007e FFF7FEFF 		bl	Error_Handler
+ 264              	.L11:
+ 179:./Core/Src/main.c ****   }
+ 180:./Core/Src/main.c ****   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+ 265              		.loc 1 180 7
+ 266 0082 1848     		ldr	r0, .L15
+ 267 0084 FFF7FEFF 		bl	HAL_TIM_PWM_Init
+ 268 0088 0346     		mov	r3, r0
+ 269              		.loc 1 180 6
+ 270 008a 002B     		cmp	r3, #0
+ 271 008c 01D0     		beq	.L12
+ 181:./Core/Src/main.c ****   {
+ 182:./Core/Src/main.c ****     Error_Handler();
+ 272              		.loc 1 182 5
+ 273 008e FFF7FEFF 		bl	Error_Handler
+ 274              	.L12:
+ 183:./Core/Src/main.c ****   }
+ 184:./Core/Src/main.c ****   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+ 275              		.loc 1 184 37
+ 276 0092 0023     		movs	r3, #0
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 9
+
+
+ 277 0094 3B62     		str	r3, [r7, #32]
+ 185:./Core/Src/main.c ****   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+ 278              		.loc 1 185 33
+ 279 0096 0023     		movs	r3, #0
+ 280 0098 7B62     		str	r3, [r7, #36]
+ 186:./Core/Src/main.c ****   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+ 281              		.loc 1 186 7
+ 282 009a 07F12003 		add	r3, r7, #32
+ 283 009e 1946     		mov	r1, r3
+ 284 00a0 1048     		ldr	r0, .L15
+ 285 00a2 FFF7FEFF 		bl	HAL_TIMEx_MasterConfigSynchronization
+ 286 00a6 0346     		mov	r3, r0
+ 287              		.loc 1 186 6
+ 288 00a8 002B     		cmp	r3, #0
+ 289 00aa 01D0     		beq	.L13
+ 187:./Core/Src/main.c ****   {
+ 188:./Core/Src/main.c ****     Error_Handler();
+ 290              		.loc 1 188 5
+ 291 00ac FFF7FEFF 		bl	Error_Handler
+ 292              	.L13:
+ 189:./Core/Src/main.c ****   }
+ 190:./Core/Src/main.c ****   sConfigOC.OCMode = TIM_OCMODE_PWM1;
+ 293              		.loc 1 190 20
+ 294 00b0 6023     		movs	r3, #96
+ 295 00b2 7B60     		str	r3, [r7, #4]
+ 191:./Core/Src/main.c ****   sConfigOC.Pulse = 0;
+ 296              		.loc 1 191 19
+ 297 00b4 0023     		movs	r3, #0
+ 298 00b6 BB60     		str	r3, [r7, #8]
+ 192:./Core/Src/main.c ****   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+ 299              		.loc 1 192 24
+ 300 00b8 0023     		movs	r3, #0
+ 301 00ba FB60     		str	r3, [r7, #12]
+ 193:./Core/Src/main.c ****   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+ 302              		.loc 1 193 24
+ 303 00bc 0023     		movs	r3, #0
+ 304 00be 7B61     		str	r3, [r7, #20]
+ 194:./Core/Src/main.c ****   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+ 305              		.loc 1 194 7
+ 306 00c0 3B1D     		adds	r3, r7, #4
+ 307 00c2 0022     		movs	r2, #0
+ 308 00c4 1946     		mov	r1, r3
+ 309 00c6 0748     		ldr	r0, .L15
+ 310 00c8 FFF7FEFF 		bl	HAL_TIM_PWM_ConfigChannel
+ 311 00cc 0346     		mov	r3, r0
+ 312              		.loc 1 194 6
+ 313 00ce 002B     		cmp	r3, #0
+ 314 00d0 01D0     		beq	.L14
+ 195:./Core/Src/main.c ****   {
+ 196:./Core/Src/main.c ****     Error_Handler();
+ 315              		.loc 1 196 5
+ 316 00d2 FFF7FEFF 		bl	Error_Handler
+ 317              	.L14:
+ 197:./Core/Src/main.c ****   }
+ 198:./Core/Src/main.c ****   /* USER CODE BEGIN TIM3_Init 2 */
+ 199:./Core/Src/main.c **** 
+ 200:./Core/Src/main.c ****   /* USER CODE END TIM3_Init 2 */
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 10
+
+
+ 201:./Core/Src/main.c ****   HAL_TIM_MspPostInit(&htim3);
+ 318              		.loc 1 201 3
+ 319 00d6 0348     		ldr	r0, .L15
+ 320 00d8 FFF7FEFF 		bl	HAL_TIM_MspPostInit
+ 202:./Core/Src/main.c **** 
+ 203:./Core/Src/main.c **** }
+ 321              		.loc 1 203 1
+ 322 00dc 00BF     		nop
+ 323 00de 3837     		adds	r7, r7, #56
+ 324              		.cfi_def_cfa_offset 8
+ 325 00e0 BD46     		mov	sp, r7
+ 326              		.cfi_def_cfa_register 13
+ 327              		@ sp needed
+ 328 00e2 80BD     		pop	{r7, pc}
+ 329              	.L16:
+ 330              		.align	2
+ 331              	.L15:
+ 332 00e4 00000000 		.word	htim3
+ 333 00e8 00040040 		.word	1073742848
+ 334              		.cfi_endproc
+ 335              	.LFE67:
+ 337              		.section	.text.MX_GPIO_Init,"ax",%progbits
+ 338              		.align	1
+ 339              		.syntax unified
+ 340              		.thumb
+ 341              		.thumb_func
+ 342              		.fpu softvfp
+ 344              	MX_GPIO_Init:
+ 345              	.LFB68:
+ 204:./Core/Src/main.c **** 
+ 205:./Core/Src/main.c **** /**
+ 206:./Core/Src/main.c ****   * @brief GPIO Initialization Function
+ 207:./Core/Src/main.c ****   * @param None
+ 208:./Core/Src/main.c ****   * @retval None
+ 209:./Core/Src/main.c ****   */
+ 210:./Core/Src/main.c **** static void MX_GPIO_Init(void)
+ 211:./Core/Src/main.c **** {
+ 346              		.loc 1 211 1
+ 347              		.cfi_startproc
+ 348              		@ args = 0, pretend = 0, frame = 8
+ 349              		@ frame_needed = 1, uses_anonymous_args = 0
+ 350              		@ link register save eliminated.
+ 351 0000 80B4     		push	{r7}
+ 352              		.cfi_def_cfa_offset 4
+ 353              		.cfi_offset 7, -4
+ 354 0002 83B0     		sub	sp, sp, #12
+ 355              		.cfi_def_cfa_offset 16
+ 356 0004 00AF     		add	r7, sp, #0
+ 357              		.cfi_def_cfa_register 7
+ 358              	.LBB4:
+ 212:./Core/Src/main.c **** 
+ 213:./Core/Src/main.c ****   /* GPIO Ports Clock Enable */
+ 214:./Core/Src/main.c ****   __HAL_RCC_GPIOA_CLK_ENABLE();
+ 359              		.loc 1 214 3
+ 360 0006 084B     		ldr	r3, .L18
+ 361 0008 9B69     		ldr	r3, [r3, #24]
+ 362 000a 074A     		ldr	r2, .L18
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 11
+
+
+ 363 000c 43F00403 		orr	r3, r3, #4
+ 364 0010 9361     		str	r3, [r2, #24]
+ 365 0012 054B     		ldr	r3, .L18
+ 366 0014 9B69     		ldr	r3, [r3, #24]
+ 367 0016 03F00403 		and	r3, r3, #4
+ 368 001a 7B60     		str	r3, [r7, #4]
+ 369 001c 7B68     		ldr	r3, [r7, #4]
+ 370              	.LBE4:
+ 215:./Core/Src/main.c **** 
+ 216:./Core/Src/main.c **** }
+ 371              		.loc 1 216 1
+ 372 001e 00BF     		nop
+ 373 0020 0C37     		adds	r7, r7, #12
+ 374              		.cfi_def_cfa_offset 4
+ 375 0022 BD46     		mov	sp, r7
+ 376              		.cfi_def_cfa_register 13
+ 377              		@ sp needed
+ 378 0024 80BC     		pop	{r7}
+ 379              		.cfi_restore 7
+ 380              		.cfi_def_cfa_offset 0
+ 381 0026 7047     		bx	lr
+ 382              	.L19:
+ 383              		.align	2
+ 384              	.L18:
+ 385 0028 00100240 		.word	1073876992
+ 386              		.cfi_endproc
+ 387              	.LFE68:
+ 389              		.section	.text.Error_Handler,"ax",%progbits
+ 390              		.align	1
+ 391              		.global	Error_Handler
+ 392              		.syntax unified
+ 393              		.thumb
+ 394              		.thumb_func
+ 395              		.fpu softvfp
+ 397              	Error_Handler:
+ 398              	.LFB69:
+ 217:./Core/Src/main.c **** 
+ 218:./Core/Src/main.c **** /* USER CODE BEGIN 4 */
+ 219:./Core/Src/main.c **** 
+ 220:./Core/Src/main.c **** /* USER CODE END 4 */
+ 221:./Core/Src/main.c **** 
+ 222:./Core/Src/main.c **** /**
+ 223:./Core/Src/main.c ****   * @brief  This function is executed in case of error occurrence.
+ 224:./Core/Src/main.c ****   * @retval None
+ 225:./Core/Src/main.c ****   */
+ 226:./Core/Src/main.c **** void Error_Handler(void)
+ 227:./Core/Src/main.c **** {
+ 399              		.loc 1 227 1
+ 400              		.cfi_startproc
+ 401              		@ args = 0, pretend = 0, frame = 0
+ 402              		@ frame_needed = 1, uses_anonymous_args = 0
+ 403              		@ link register save eliminated.
+ 404 0000 80B4     		push	{r7}
+ 405              		.cfi_def_cfa_offset 4
+ 406              		.cfi_offset 7, -4
+ 407 0002 00AF     		add	r7, sp, #0
+ 408              		.cfi_def_cfa_register 7
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 12
+
+
+ 409              	.LBB5:
+ 410              	.LBB6:
+ 411              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 13
+
+
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 14
+
+
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 412              		.loc 2 142 3
+ 413              		.syntax unified
+ 414              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 415 0004 72B6     		cpsid i
+ 416              	@ 0 "" 2
+ 143:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 417              		.loc 2 143 1
+ 418              		.thumb
+ 419              		.syntax unified
+ 420 0006 00BF     		nop
+ 421              	.L21:
+ 422              	.LBE6:
+ 423              	.LBE5:
+ 228:./Core/Src/main.c ****   /* USER CODE BEGIN Error_Handler_Debug */
+ 229:./Core/Src/main.c ****   /* User can add his own implementation to report the HAL error return state */
+ 230:./Core/Src/main.c ****   __disable_irq();
+ 231:./Core/Src/main.c ****   while (1)
+ 424              		.loc 1 231 9 discriminator 1
+ 425 0008 FEE7     		b	.L21
+ 426              		.cfi_endproc
+ 427              	.LFE69:
+ 429              		.text
+ 430              	.Letext0:
+ 431              		.file 3 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 432              		.file 4 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 433              		.file 5 "Drivers/CMSIS/Include/core_cm3.h"
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 15
+
+
+ 434              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 435              		.file 7 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 436              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 437              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h"
+ 438              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h"
+ 439              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 440              		.file 12 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h"
+ 441              		.file 13 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+                            *COM*:0000000000000048 htim3
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:17     .text.main:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:25     .text.main:0000000000000000 main
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:84     .text.SystemClock_Config:0000000000000000 SystemClock_Config
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:344    .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:180    .text.MX_TIM3_Init:0000000000000000 MX_TIM3_Init
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:72     .text.main:0000000000000040 $d
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:77     .text.SystemClock_Config:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:397    .text.Error_Handler:0000000000000000 Error_Handler
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:174    .text.MX_TIM3_Init:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:332    .text.MX_TIM3_Init:00000000000000e4 $d
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:338    .text.MX_GPIO_Init:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:385    .text.MX_GPIO_Init:0000000000000028 $d
+C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s:390    .text.Error_Handler:0000000000000000 $t
+                           .group:0000000000000000 wm4.0.e890922d021f7fff2fbf219cb2b38f03
+                           .group:0000000000000000 wm4.stm32f1xx_hal_conf.h.21.43378aa0698cb088dbf078b8e78794f7
+                           .group:0000000000000000 wm4.stm32f1xx.h.39.208bb8a61c892b7c37d899c49a031330
+                           .group:0000000000000000 wm4.stm32f103xb.h.38.ec967d5ad9d3269cb0788eebda048e38
+                           .group:0000000000000000 wm4._newlib_version.h.4.1ef4e12f167f8b69d7c30054be56050d
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.cmsis_version.h.32.4d5822004c01a829a975260e854b5f8e
+                           .group:0000000000000000 wm4.core_cm3.h.66.fc46cac19810db8f98d67da7ef88f42c
+                           .group:0000000000000000 wm4.cmsis_gcc.h.26.225e4f5469716fdeef823d1102f5b23e
+                           .group:0000000000000000 wm4.core_cm3.h.127.f4474120f1a7524deb56f9d74ff175da
+                           .group:0000000000000000 wm4.stm32f103xb.h.573.10249aa7473ca93be896fed94046a725
+                           .group:0000000000000000 wm4.stm32f1xx.h.162.96b09079a093c34dbd7f0b85cbd0ddee
+                           .group:0000000000000000 wm4.stm32_hal_legacy.h.23.91ba5b544a4c2be2620a1e7ff0049e10
+                           .group:0000000000000000 wm4.stddef.h.39.144cf5ddcd53cbfdac30259dc1a6c87f
+                           .group:0000000000000000 wm4.stm32f1xx_hal_def.h.57.18d01ce1aa74e9fb44dbf16f821a574a
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc.h.95.21591bbc513aaa813c0b8640c3b32517
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc_ex.h.22.8763f99bc1e3e2dcf0febe9161d81b37
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc.h.1202.f8e5f9e0cf4eef7840facf5396029056
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio.h.22.fa638d688dcc57ca806fe6a7831b0d04
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio_ex.h.22.51a50ef3512cd78017ce666a32d364bf
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio.h.263.f5ebf2f545ade59412ab9261c8e35dc4
+                           .group:0000000000000000 wm4.stm32f1xx_hal_exti.h.22.e26491d042c8079c3ca67eca341af862
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma.h.22.3c14338534886827bf3aeaa2a7f412a1
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma_ex.h.22.001ac4d7f81ccbdcae49bd65c13858c8
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma.h.409.cafcd2cfe701091535636be537c18293
+                           .group:0000000000000000 wm4.stm32f1xx_hal_cortex.h.22.b5f4174bb6a50d95405567b8f50e0900
+                           .group:0000000000000000 wm4.stm32f1xx_hal_flash.h.22.5cea9a7210e6315b41724b47b5fdf203
+                           .group:0000000000000000 wm4.stm32f1xx_hal_flash_ex.h.22.d4e19c21f2a86fa2f8ec2c2d5f1ab2af
+                           .group:0000000000000000 wm4.stm32f1xx_hal_pwr.h.22.3438c476faafc3240bf146f143df3fcd
+                           .group:0000000000000000 wm4.stm32f1xx_hal_tim.h.22.a16e206564e97dbace9faae59a0d6008
+                           .group:0000000000000000 wm4.stm32f1xx_hal.h.88.91065c0692bed6019c34f1e9c00589fd
+
+UNDEFINED SYMBOLS
+HAL_Init
+HAL_TIM_PWM_Start
+HAL_Delay
+memset
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccWfB34t.s 			page 17
+
+
+HAL_RCC_OscConfig
+HAL_RCC_ClockConfig
+HAL_TIM_Base_Init
+HAL_TIM_ConfigClockSource
+HAL_TIM_PWM_Init
+HAL_TIMEx_MasterConfigSynchronization
+HAL_TIM_PWM_ConfigChannel
+HAL_TIM_MspPostInit
