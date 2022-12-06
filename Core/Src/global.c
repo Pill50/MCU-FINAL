@@ -7,4 +7,5 @@
 
 #include "global.h"
 
-int status = 0;
+int status_horizontal = 0;
+int status_vertical = 0;
