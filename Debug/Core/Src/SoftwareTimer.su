@@ -1,5 +1,5 @@
-../Core/Src/SoftwareTimer.c:22:6:setTimer1	16	static
-../Core/Src/SoftwareTimer.c:27:6:setTimer2	16	static
-../Core/Src/SoftwareTimer.c:32:6:setTimer3	16	static
-../Core/Src/SoftwareTimer.c:37:6:setTimer4	16	static
-../Core/Src/SoftwareTimer.c:42:6:TimerRun	4	static
+SoftwareTimer.c:22:6:setTimer1	16	static
+SoftwareTimer.c:27:6:setTimer2	16	static
+SoftwareTimer.c:32:6:setTimer3	16	static
+SoftwareTimer.c:37:6:setTimer4	16	static
+SoftwareTimer.c:42:6:TimerRun	4	static

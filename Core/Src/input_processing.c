@@ -2,6 +2,7 @@
 #include "button.h"
 #include "input_processing.h"
 #include "SoftwareTimer.h"
+#include "global.h"
 #define TRUE 1
 #define FALSE 0
 #define T_7SEGLED 250
@@ -141,6 +142,7 @@ void fsm_for_input_processing(){
 			if(button4_executed==0){
 				flag_pes=1;
 				button4_executed=1;
+				timer2_flag = 1;
 				pes_led_count=pes_led_period;
 			}
 		}else if(button4_pressed()==0){
@@ -150,11 +152,20 @@ void fsm_for_input_processing(){
 		if(flag_pes==1){
 			if(current_led_way1==RED){
 				PES_LED_ON();
+				if (leds_way1_count[0] <= 3){
+					if (timer2_flag == 1){
+						pwm = pwm +25;
+						setTimer2(30);
+					}
+				}
 			}else{
 				PES_LED_OFF();
+				timer2_flag = 1;
+				pwm = 0;
 			}
 			if(pes_led_count<=0 && current_led_way1!=RED){
 				PES_LED_OFF();
+				pwm = 0;
 				flag_pes=0;
 			}
 		}
@@ -407,28 +418,22 @@ void updateDuration(enum LED color){
 
 void displaySingleLedsMode1(){
 	if(current_led_way1==RED){
-		turnOff1();  // TURN OFF YELLOW LED
 		turnOnRed1();  // TURN ON RED LED
 	}
 	if(current_led_way1==GREEN){
-		turnOff1();  // TURN OFF RED LED
 		turnOnGreen1();  // TURN ON GREEN LED
 	}
 	if(current_led_way1==YELLOW){
-		turnOff1();  // TURN OFF GREEN LED
 		turnOnYellow1();  // TURN ON YELLOW LED
 	}
 
 	if(current_led_way2==RED){
-		turnOff2();  // TURN OFF YELLOW LED
 		turnOnRed2();  // TURN ON RED LED
 	}
 	if(current_led_way2==GREEN){
-		turnOff2();  // TURN OFF RED LED
 		turnOnGreen2();  // TURN ON GREEN LED
 	}
 	if(current_led_way2==YELLOW){
-		turnOff2();  // TURN OFF GREEN LED
 		turnOnYellow2();  // TURN ON YELLOW LED
 	}
 }
