@@ -25,6 +25,7 @@
 #include "button.h"
 #include "input_processing.h"
 #include "global.h"
+#include "SoftwareTimer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -111,7 +112,7 @@ int main(void)
   {
  	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, pwm);
  	  HAL_Delay(1000);
-	  fsm_for_input_processing();
+	  fsm_for_input_processing(&huart2);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

@@ -9,5 +9,6 @@
 #define INC_GLOBAL_H_
 
 extern int pwm;
+extern char traffic_light_num[50];
 
 #endif /* INC_GLOBAL_H_ */

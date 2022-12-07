@@ -12,6 +12,6 @@ extern int RED_DURATION;
 extern int YELLOW_DURATION;
 extern int GREEN_DURATION;
 
-void fsm_for_input_processing();
+void fsm_for_input_processing(UART_HandleTypeDef*huart);
 
 #endif /* INC_INPUT_PROCESSING_H_ */

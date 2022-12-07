@@ -3,6 +3,7 @@
 #include "input_processing.h"
 #include "SoftwareTimer.h"
 #include "global.h"
+#include "stdio.h"
 #define TRUE 1
 #define FALSE 0
 #define T_7SEGLED 250
@@ -44,8 +45,7 @@ const int MAX_LED=2;
 int index_7SEGLed=0;
 int led_buffer1[2];
 int led_buffer2[2];
-void update_led_buffer1(int val);
-void update_led_buffer2(int val);
+void update_led_buffer(int val);
 void Switch7SEGLEDIndex();
 void displayMode(int mode);
 void update7SEG(int index);
@@ -71,7 +71,7 @@ void ToggleRED();
 void ToggleGREEN();
 void ToggleYELLOW();
 
-void fsm_for_input_processing(){
+void fsm_for_input_processing(UART_HandleTypeDef*huart){
 	switch(state){
 	case INIT:
 		/* INIT PORT OUTPUT START */
@@ -115,6 +115,17 @@ void fsm_for_input_processing(){
 			displaySingleLedsMode1();
 		}
 		/* COUNT DOWN END */
+
+		/* UART TRANSMIT START */
+		if(current_led_way1==RED){
+			update_led_buffer(leds_way1_count[0]);
+		}else if(current_led_way1==GREEN){
+			update_led_buffer(leds_way1_count[1]);
+		}else if(current_led_way1==YELLOW){
+			update_led_buffer(leds_way1_count[2]);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
 
 
 		/*EXECUTE INPUT BUTTON1 START */
@@ -210,6 +221,13 @@ void fsm_for_input_processing(){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+		/* UART TRANSMIT START */
+		if(LedToChange==RED){
+			update_led_buffer(red_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
+
 		break;
 	case MODE3:
 
@@ -251,6 +269,12 @@ void fsm_for_input_processing(){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+		/* UART TRANSMIT START */
+		if(LedToChange==GREEN){
+			update_led_buffer(green_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
 		break;
 	case MODE4:
 		/* BLINK SINGLE GREEN LED START */
@@ -291,6 +315,12 @@ void fsm_for_input_processing(){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+		/* UART TRANSMIT START */
+		if(LedToChange==YELLOW){
+			update_led_buffer(yellow_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
 		break;
 	case INCREASE:
 		/* BLINK SINGLE LED START */
@@ -358,6 +388,16 @@ void fsm_for_input_processing(){
 		}
 		/* INCREASE TEMP DURATION END */
 		//TO DO
+		/* UART TRANSMIT START */
+		if(LedToChange==RED){
+			update_led_buffer(red_temp_dur);
+		}else if(LedToChange==GREEN){
+			update_led_buffer(green_temp_dur);
+		}else if(LedToChange==YELLOW){
+			update_led_buffer(yellow_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
 		break;
 	case UPDATE_DURATION:
 		updateDuration(LedToChange);
@@ -524,7 +564,10 @@ void turnOff2(){
 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, 0);
 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, 0);
 }
-
+void update_led_buffer(int val){
+	led_buffer1[0]=val/10;
+	led_buffer1[1]=val%10;
+}
 int toggle_state=0;
 
 
