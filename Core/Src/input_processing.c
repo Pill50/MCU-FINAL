@@ -3,6 +3,7 @@
 #include "input_processing.h"
 #include "SoftwareTimer.h"
 #include "global.h"
+#include <stdio.h>
 #define TRUE 1
 #define FALSE 0
 #define T_7SEGLED 250
@@ -38,14 +39,18 @@ int flag_pes=0;
 int button4_executed=0;
 /* VAR NG DI BO */
 
+/* var BLINKING */
+int led_state=0;
+/* VAR BLINKING */
+
+int print=0;
 enum LED LedToChange;
 
 const int MAX_LED=2;
 int index_7SEGLed=0;
 int led_buffer1[2];
 int led_buffer2[2];
-void update_led_buffer1(int val);
-void update_led_buffer2(int val);
+void update_led_buffer(int val);
 void Switch7SEGLEDIndex();
 void displayMode(int mode);
 void update7SEG(int index);
@@ -57,6 +62,7 @@ void displaySingleLedsMode1();
 void display7SEGMode1();
 void turnOffSingleLed();
 void PES_LED_ON();
+void PES_LED_RED();
 void PES_LED_OFF();
 void ledBlinking(enum LED led_to_change);
 void turnOnGreen1();
@@ -71,9 +77,10 @@ void ToggleRED();
 void ToggleGREEN();
 void ToggleYELLOW();
 
-void fsm_for_input_processing(){
+void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 	switch(state){
 	case INIT:
+		print=0;
 		/* INIT PORT OUTPUT START */
 		turnOffSingleLed();
 		/* INIT PORT OUTPUT END */
@@ -95,6 +102,7 @@ void fsm_for_input_processing(){
 		leds_way2_count[2]=YELLOW_DURATION;
 		turnOnGreen2();
 		current_led_way2=GREEN;
+		PES_LED_OFF();
 		/* INITIALIZE COUNT END */
 
 		state=MODE1;
@@ -113,13 +121,27 @@ void fsm_for_input_processing(){
 			trafficLightCount(leds_way1_count,&current_led_way1);
 			trafficLightCount(leds_way2_count,&current_led_way2);
 			displaySingleLedsMode1();
+			HAL_UART_Transmit(huart, traffic_light_num,
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 		}
 		/* COUNT DOWN END */
+
+		/* UART TRANSMIT START */
+		if(current_led_way1==RED){
+			update_led_buffer(leds_way1_count[0]);
+		}else if(current_led_way1==GREEN){
+			update_led_buffer(leds_way1_count[1]);
+		}else if(current_led_way1==YELLOW){
+			update_led_buffer(leds_way1_count[2]);
+		}
+
+		/* UART TRANSMIT END */
 
 
 		/*EXECUTE INPUT BUTTON1 START */
 		if(button1_executed==0){
 			if(button1_pressed()==TRUE){
+				print=0;
 				state=MODE2;
 				button1_executed=1;
 				setTimer1(250);   //set timer for red led blinking
@@ -129,6 +151,8 @@ void fsm_for_input_processing(){
 				green_temp_dur=GREEN_DURATION;
 				/* INITIALIZE TEMP DURATION END */
 				turnOffSingleLed();
+				PES_LED_OFF();
+				flag_pes=0;
 			}
 		}else if(button1_executed==1){
 			if(button1_pressed()==FALSE){
@@ -154,31 +178,49 @@ void fsm_for_input_processing(){
 				PES_LED_ON();
 				if (leds_way1_count[0] <= 3){
 					if (timer2_flag == 1){
-						pwm = pwm +25;
+						pwm = pwm +250;
+						__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, pwm);
 						setTimer2(30);
 					}
 				}
 			}else{
-				PES_LED_OFF();
+				PES_LED_RED();
 				timer2_flag = 1;
 				pwm = 0;
+				__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, pwm);
 			}
 			if(pes_led_count<=0 && current_led_way1!=RED){
 				PES_LED_OFF();
 				pwm = 0;
 				flag_pes=0;
+				__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, pwm);
 			}
 		}
 		/* PES LED EXCUTION END */
 		break;
 	case MODE2:
+		/* UART TRANSMIT START */
+		update_led_buffer(red_temp_dur);
+		if(print==0){
+			HAL_UART_Transmit(huart, traffic_light_num,
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			print=1;
+		}
+		/* UART TRANSMIT END */
 
 		/* BLINK SINGLE RED LED START */
-//		if(timer1_flag==1){
-//			setTimer1(250);
-//			HAL_GPIO_TogglePin(RED_LED1_GPIO_Port, RED_LED1_Pin);  //TOGGLE RED LEDS IN 2 WAY
-//			HAL_GPIO_TogglePin(RED_LED2_GPIO_Port, RED_LED2_Pin);
-//		}
+		if(timer1_flag==1){
+			setTimer1(250);
+			if(led_state==0){
+				turnOnRed1();
+				turnOnRed2();
+				led_state=1;
+			}else if(led_state==1){
+				turnOff1();
+				turnOff2();
+				led_state=0;
+			}
+		}
 		/* BLINK SINGLE RED LED END */
 
 		/*EXECUTE INPUT BUTTON1 START */
@@ -187,6 +229,7 @@ void fsm_for_input_processing(){
 				state=MODE3;
 				button1_executed=1;
 				turnOffSingleLed();
+				print=0;
 			}
 		}else if(button1_executed==1){
 			if(button1_pressed()==FALSE){
@@ -210,16 +253,32 @@ void fsm_for_input_processing(){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+
+
 		break;
 	case MODE3:
-
-		/* BLINK SINGLE YELLOW LED START */
-//		if(timer1_flag==1){
-//			setTimer1(250);
-//			HAL_GPIO_TogglePin(GREEN_LED1_GPIO_Port, GREEN_LED1_Pin);  //TOGGLE RED LEDS IN 2 WAY
-//			HAL_GPIO_TogglePin(GREEN_LED2_GPIO_Port, GREEN_LED2_Pin);
-//		}
-		/* BLINK SINGLE YELLOW LED END */
+		/* UART TRANSMIT START */
+		update_led_buffer(green_temp_dur);
+		if(print==0){
+			HAL_UART_Transmit(huart, traffic_light_num,
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			print=1;
+		}
+		/* UART TRANSMIT END */
+		/* BLINK SINGLE GREEN LED START */
+		if(timer1_flag==1){
+			setTimer1(250);
+			if(led_state==0){
+				turnOnGreen1();
+				turnOnGreen2();
+				led_state=1;
+			}else if(led_state==1){
+				turnOff1();
+				turnOff2();
+				led_state=0;
+			}
+		}
+		/* BLINK SINGLE GREEN LED END */
 
 
 		/*EXECUTE INPUT BUTTON1 START */
@@ -228,6 +287,7 @@ void fsm_for_input_processing(){
 				state=MODE4;
 				button1_executed=1;
 				turnOffSingleLed();
+				print=0;
 			}
 		}else if(button1_executed==1){
 			if(button1_pressed()==FALSE){
@@ -251,14 +311,30 @@ void fsm_for_input_processing(){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+
 		break;
 	case MODE4:
-		/* BLINK SINGLE GREEN LED START */
-//		if(timer1_flag==1){
-//			setTimer1(250);
-//			HAL_GPIO_TogglePin(YELLOW_LED1_GPIO_Port, YELLOW_LED1_Pin);  //TOGGLE RED LEDS IN 2 WAY
-//			HAL_GPIO_TogglePin(YELLOW_LED2_GPIO_Port, YELLOW_LED2_Pin);
-//		}
+		/* UART TRANSMIT START */
+		update_led_buffer(yellow_temp_dur);
+		if(print==0){
+			HAL_UART_Transmit(huart, traffic_light_num,
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			print=1;
+		}
+		/* UART TRANSMIT END */
+		/* BLINK SINGLE YELLOW LED START */
+		if(timer1_flag==1){
+			setTimer1(250);
+			if(led_state==0){
+				turnOnYellow1();
+				turnOnYellow2();
+				led_state=1;
+			}else if(led_state==1){
+				turnOff1();
+				turnOff2();
+				led_state=0;
+			}
+		}
 		/* BLINK SINGLE GREEN LED END */
 
 		/*EXECUTE INPUT BUTTON1 START */
@@ -268,6 +344,7 @@ void fsm_for_input_processing(){
 				button1_executed=1;
 				setTimer1(0); //turn off or reset timer 1
 				turnOffSingleLed();
+				print=0;
 			}
 		}else if(button1_executed==1){
 			if(button1_pressed()==FALSE){
@@ -291,17 +368,19 @@ void fsm_for_input_processing(){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+
 		break;
 	case INCREASE:
 		/* BLINK SINGLE LED START */
-//		if(timer1_flag==1){
-//			setTimer1(250);
-//			ledBlinking(LedToChange);
-//		}
+		if(timer1_flag==1){
+			setTimer1(250);
+			ledBlinking(LedToChange);
+		}
 		/* BLINK SINGLE LED END */
 
 		/* EXECUTE INPUT BUTTON2 START */
 		if(button2_pressed_1s()==TRUE){
+			print=0;
 			state=INCREASE_500MS;
 			setTimer3(500);
 		}else if(button2_pressed()==FALSE){
@@ -323,17 +402,33 @@ void fsm_for_input_processing(){
 		if(button2_increase1==0){
 			increaseTempDur(LedToChange);
 			button2_increase1=1;
+
+		/* UART TRANSMIT START */
+			switch(LedToChange){
+				case RED:
+					update_led_buffer(red_temp_dur);
+					break;
+				case GREEN:
+					update_led_buffer(green_temp_dur);
+					break;
+				case YELLOW:
+					update_led_buffer(yellow_temp_dur);
+					break;
+			}
+			HAL_UART_Transmit(huart, traffic_light_num,
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 		}
+		/* UART TRANSMIT END */
 		/* INCREASE DURATION END */
 		//TO DO
 		break;
 	case INCREASE_500MS:
 		/* BLINK SINGLE LED START */
-//		if(timer1_flag==1){
-//			setTimer1(250);
-//			ledBlinking(LedToChange);
-//		}
-//		/* BLINK SINGLE LED END */
+		if(timer1_flag==1){
+			setTimer1(250);
+			ledBlinking(LedToChange);
+		}
+		/* BLINK SINGLE LED END */
 
 		/* EXECUTE INPUT BUTTON2 START */
 		if(button2_pressed()==FALSE){
@@ -355,9 +450,34 @@ void fsm_for_input_processing(){
 		if(timer3_flag==1){
 			setTimer3(500);
 			increaseTempDur(LedToChange);
-		}
+			/* UART TRANSMIT START */
+				switch(LedToChange){
+					case RED:
+						update_led_buffer(red_temp_dur);
+						break;
+					case GREEN:
+						update_led_buffer(green_temp_dur);
+						break;
+					case YELLOW:
+						update_led_buffer(yellow_temp_dur);
+						break;
+				}
+				HAL_UART_Transmit(huart, traffic_light_num,
+				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			}
+			/* UART TRANSMIT END */
+
 		/* INCREASE TEMP DURATION END */
 		//TO DO
+		/* UART TRANSMIT START */
+		if(LedToChange==RED){
+			update_led_buffer(red_temp_dur);
+		}else if(LedToChange==GREEN){
+			update_led_buffer(green_temp_dur);
+		}else if(LedToChange==YELLOW){
+			update_led_buffer(yellow_temp_dur);
+		}
+		/* UART TRANSMIT END */
 		break;
 	case UPDATE_DURATION:
 		updateDuration(LedToChange);
@@ -467,29 +587,41 @@ void turnOffSingleLed(){
 	turnOff2();
 }
 
-//void ledBlinking(enum LED led_to_change){
-//	switch(led_to_change){
-//	case RED:
-//		HAL_GPIO_TogglePin(RED_LED1_GPIO_Port, RED_LED1_Pin);  //TOGGLE RED LEDS IN 2 WAY
-//		HAL_GPIO_TogglePin(RED_LED2_GPIO_Port, RED_LED2_Pin);
-//		break;
-//	case YELLOW:
-//		HAL_GPIO_TogglePin(YELLOW_LED1_GPIO_Port, YELLOW_LED1_Pin);  //TOGGLE RED LEDS IN 2 WAY
-//		HAL_GPIO_TogglePin(YELLOW_LED2_GPIO_Port, YELLOW_LED2_Pin);
-//		break;
-//	case GREEN:
-//		HAL_GPIO_TogglePin(GREEN_LED1_GPIO_Port, GREEN_LED1_Pin);  //TOGGLE RED LEDS IN 2 WAY
-//		HAL_GPIO_TogglePin(GREEN_LED2_GPIO_Port, GREEN_LED2_Pin);
-//		break;
-//	}
-//}
+void ledBlinking(enum LED led_to_change){
+	if(led_state==0){
+		switch(led_to_change){
+		case RED:
+			turnOnRed1();
+			turnOnRed2();
+			break;
+		case YELLOW:
+			turnOnYellow1();
+			turnOnYellow2();
+			break;
+		case GREEN:
+			turnOnGreen1();
+			turnOnGreen2();
+			break;
+		}
+		led_state=1;
+	}else if(led_state==1){
+		turnOff1();
+		turnOff2();
+		led_state=0;
+	}
+
+}
 
 void PES_LED_ON(){
 	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, 0);
 	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, 1);
 }
-void PES_LED_OFF(){
+void PES_LED_RED(){
 	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, 1);
+	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, 0);
+}
+void PES_LED_OFF(){
+	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, 0);
 	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, 0);
 }
 void turnOnGreen1(){
@@ -524,7 +656,10 @@ void turnOff2(){
 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, 0);
 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, 0);
 }
-
+void update_led_buffer(int val){
+	led_buffer1[0]=val/10;
+	led_buffer1[1]=val%10;
+}
 int toggle_state=0;
 
 
