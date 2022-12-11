@@ -3,7 +3,11 @@
 #include "input_processing.h"
 #include "SoftwareTimer.h"
 #include "global.h"
+<<<<<<< HEAD
 #include <stdio.h>
+=======
+#include "stdio.h"
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 #define TRUE 1
 #define FALSE 0
 #define T_7SEGLED 250
@@ -77,7 +81,11 @@ void ToggleRED();
 void ToggleGREEN();
 void ToggleYELLOW();
 
+<<<<<<< HEAD
 void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
+=======
+void fsm_for_input_processing(UART_HandleTypeDef*huart){
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 	switch(state){
 	case INIT:
 		print=0;
@@ -134,7 +142,11 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		}else if(current_led_way1==YELLOW){
 			update_led_buffer(leds_way1_count[2]);
 		}
+<<<<<<< HEAD
 
+=======
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 		/* UART TRANSMIT END */
 
 
@@ -253,7 +265,16 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+<<<<<<< HEAD
 
+=======
+		/* UART TRANSMIT START */
+		if(LedToChange==RED){
+			update_led_buffer(red_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 
 		break;
 	case MODE3:
@@ -311,7 +332,16 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+<<<<<<< HEAD
 
+=======
+		/* UART TRANSMIT START */
+		if(LedToChange==GREEN){
+			update_led_buffer(green_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 		break;
 	case MODE4:
 		/* UART TRANSMIT START */
@@ -368,7 +398,16 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		}
 		/*EXECUTE INPUT BUTTON2 END */
 		//TO DO
+<<<<<<< HEAD
 
+=======
+		/* UART TRANSMIT START */
+		if(LedToChange==YELLOW){
+			update_led_buffer(yellow_temp_dur);
+		}
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+		/* UART TRANSMIT END */
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 		break;
 	case INCREASE:
 		/* BLINK SINGLE LED START */
@@ -477,6 +516,10 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		}else if(LedToChange==YELLOW){
 			update_led_buffer(yellow_temp_dur);
 		}
+<<<<<<< HEAD
+=======
+		HAL_UART_Transmit(huart, traffic_light_num, sprintf(traffic_light_num,"!7SEG:%d%d#",led_buffer1[0],led_buffer1[1]), 100);
+>>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
 		/* UART TRANSMIT END */
 		break;
 	case UPDATE_DURATION:
