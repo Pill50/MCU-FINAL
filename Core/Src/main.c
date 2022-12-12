@@ -110,15 +110,8 @@ int main(void)
   GREEN_DURATION=3;
   while (1)
   {
-<<<<<<< HEAD
-
-
 	  fsm_for_input_processing(&huart2, &htim3);
-=======
  	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, pwm);
- 	  HAL_Delay(1000);
-	  fsm_for_input_processing(&huart2);
->>>>>>> 65c3bac4c4b1f186495d77daa532bf6f8c22c532
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
