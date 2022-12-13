@@ -124,7 +124,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 			trafficLightCount(leds_way2_count,&current_led_way2);
 			displaySingleLedsMode1();
 			HAL_UART_Transmit(huart, traffic_light_num,
-			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r\n",led_buffer1[0],led_buffer1[1]), 100);
 		}
 		/* COUNT DOWN END */
 
@@ -137,8 +137,6 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 			update_led_buffer(leds_way1_count[2]);
 		}
 
-		HAL_UART_Transmit(huart, traffic_light_num,
-		sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 		/* UART TRANSMIT END */
 
 
@@ -191,13 +189,11 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 				PES_LED_RED();
 				timer2_flag = 1;
 				pwm = 0;
-				__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, pwm);
 			}
 			if(pes_led_count<=0 && current_led_way1!=RED){
 				PES_LED_OFF();
 				pwm = 0;
 				flag_pes=0;
-				__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, pwm);
 			}
 		}
 		/* PES LED EXCUTION END */
@@ -207,7 +203,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		update_led_buffer(red_temp_dur);
 		if(print==0){
 			HAL_UART_Transmit(huart, traffic_light_num,
-			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r\n",led_buffer1[0],led_buffer1[1]), 100);
 			print=1;
 		}
 		/* UART TRANSMIT END */
@@ -261,8 +257,6 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		if(LedToChange==RED){
 			update_led_buffer(red_temp_dur);
 		}
-		HAL_UART_Transmit(huart, traffic_light_num,
-				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 		/* UART TRANSMIT END */
 
 		break;
@@ -271,7 +265,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		update_led_buffer(green_temp_dur);
 		if(print==0){
 			HAL_UART_Transmit(huart, traffic_light_num,
-			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r\n",led_buffer1[0],led_buffer1[1]), 100);
 			print=1;
 		}
 		/* UART TRANSMIT END */
@@ -325,8 +319,6 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		if(LedToChange==GREEN){
 			update_led_buffer(green_temp_dur);
 		}
-		HAL_UART_Transmit(huart, traffic_light_num,
-				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 		/* UART TRANSMIT END */
 		break;
 	case MODE4:
@@ -334,7 +326,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		update_led_buffer(yellow_temp_dur);
 		if(print==0){
 			HAL_UART_Transmit(huart, traffic_light_num,
-			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r\n",led_buffer1[0],led_buffer1[1]), 100);
 			print=1;
 		}
 		/* UART TRANSMIT END */
@@ -388,8 +380,6 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		if(LedToChange==YELLOW){
 			update_led_buffer(yellow_temp_dur);
 		}
-		HAL_UART_Transmit(huart, traffic_light_num,
-			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 		/* UART TRANSMIT END */
 		break;
 	case INCREASE:
@@ -438,7 +428,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 					break;
 			}
 			HAL_UART_Transmit(huart, traffic_light_num,
-			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+			sprintf(traffic_light_num,"!7SEG:%d%d#\r\n",led_buffer1[0],led_buffer1[1]), 100);
 		}
 		/* UART TRANSMIT END */
 		/* INCREASE DURATION END */
@@ -485,7 +475,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 						break;
 				}
 				HAL_UART_Transmit(huart, traffic_light_num,
-				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+				sprintf(traffic_light_num,"!7SEG:%d%d#\r\n",led_buffer1[0],led_buffer1[1]), 100);
 			}
 			/* UART TRANSMIT END */
 
@@ -499,9 +489,6 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 		}else if(LedToChange==YELLOW){
 			update_led_buffer(yellow_temp_dur);
 		}
-
-		HAL_UART_Transmit(huart, traffic_light_num,
-				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
 
 		/* UART TRANSMIT END */
 		break;

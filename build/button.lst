@@ -1,0 +1,820 @@
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"button.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.global	debounceButton1Buffer2
+  16              		.section	.data.debounceButton1Buffer2,"aw"
+  17              		.align	2
+  20              	debounceButton1Buffer2:
+  21 0000 01000000 		.word	1
+  22              		.global	debounceButton1Buffer1
+  23              		.section	.data.debounceButton1Buffer1,"aw"
+  24              		.align	2
+  27              	debounceButton1Buffer1:
+  28 0000 01000000 		.word	1
+  29              		.global	button1Buffer
+  30              		.section	.data.button1Buffer,"aw"
+  31              		.align	2
+  34              	button1Buffer:
+  35 0000 01000000 		.word	1
+  36              		.section	.text.button1_reading,"ax",%progbits
+  37              		.align	1
+  38              		.global	button1_reading
+  39              		.arch armv7-m
+  40              		.syntax unified
+  41              		.thumb
+  42              		.thumb_func
+  43              		.fpu softvfp
+  45              	button1_reading:
+  46              	.LFB65:
+  47              		.file 1 "./Core/Src/button.c"
+   1:./Core/Src/button.c **** /*
+   2:./Core/Src/button.c ****  * button.c
+   3:./Core/Src/button.c ****  *
+   4:./Core/Src/button.c ****  *  Created on: Oct 7, 2022
+   5:./Core/Src/button.c ****  *      Author: DELL
+   6:./Core/Src/button.c ****  */
+   7:./Core/Src/button.c **** #include "button.h"
+   8:./Core/Src/button.c **** /* 	BUTTON1 PARAMETER START */
+   9:./Core/Src/button.c **** int debounceButton1Buffer2=NORMAL_STATE;
+  10:./Core/Src/button.c **** int debounceButton1Buffer1=NORMAL_STATE;
+  11:./Core/Src/button.c **** int button1Buffer=NORMAL_STATE;
+  12:./Core/Src/button.c **** /* 	BUTTON1 PARAMETER END */
+  13:./Core/Src/button.c **** void button1_reading(){
+  48              		.loc 1 13 23
+  49              		.cfi_startproc
+  50              		@ args = 0, pretend = 0, frame = 0
+  51              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 2
+
+
+  52 0000 80B5     		push	{r7, lr}
+  53              		.cfi_def_cfa_offset 8
+  54              		.cfi_offset 7, -8
+  55              		.cfi_offset 14, -4
+  56 0002 00AF     		add	r7, sp, #0
+  57              		.cfi_def_cfa_register 7
+  14:./Core/Src/button.c **** 	debounceButton1Buffer2 =debounceButton1Buffer1;
+  58              		.loc 1 14 25
+  59 0004 0B4B     		ldr	r3, .L4
+  60 0006 1B68     		ldr	r3, [r3]
+  61 0008 0B4A     		ldr	r2, .L4+4
+  62 000a 1360     		str	r3, [r2]
+  15:./Core/Src/button.c **** 	debounceButton1Buffer1 = HAL_GPIO_ReadPin(Button1_GPIO_Port, Button1_Pin);
+  63              		.loc 1 15 27
+  64 000c 0221     		movs	r1, #2
+  65 000e 0B48     		ldr	r0, .L4+8
+  66 0010 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+  67 0014 0346     		mov	r3, r0
+  68 0016 1A46     		mov	r2, r3
+  69              		.loc 1 15 25
+  70 0018 064B     		ldr	r3, .L4
+  71 001a 1A60     		str	r2, [r3]
+  16:./Core/Src/button.c **** 	if(debounceButton1Buffer1 == debounceButton1Buffer2)
+  72              		.loc 1 16 28
+  73 001c 054B     		ldr	r3, .L4
+  74 001e 1A68     		ldr	r2, [r3]
+  75 0020 054B     		ldr	r3, .L4+4
+  76 0022 1B68     		ldr	r3, [r3]
+  77              		.loc 1 16 4
+  78 0024 9A42     		cmp	r2, r3
+  79 0026 03D1     		bne	.L3
+  17:./Core/Src/button.c **** 		button1Buffer = debounceButton1Buffer1;
+  80              		.loc 1 17 17
+  81 0028 024B     		ldr	r3, .L4
+  82 002a 1B68     		ldr	r3, [r3]
+  83 002c 044A     		ldr	r2, .L4+12
+  84 002e 1360     		str	r3, [r2]
+  85              	.L3:
+  18:./Core/Src/button.c **** }
+  86              		.loc 1 18 1
+  87 0030 00BF     		nop
+  88 0032 80BD     		pop	{r7, pc}
+  89              	.L5:
+  90              		.align	2
+  91              	.L4:
+  92 0034 00000000 		.word	debounceButton1Buffer1
+  93 0038 00000000 		.word	debounceButton1Buffer2
+  94 003c 00080140 		.word	1073809408
+  95 0040 00000000 		.word	button1Buffer
+  96              		.cfi_endproc
+  97              	.LFE65:
+  99              		.global	debounceButton2Buffer2
+ 100              		.section	.data.debounceButton2Buffer2,"aw"
+ 101              		.align	2
+ 104              	debounceButton2Buffer2:
+ 105 0000 01000000 		.word	1
+ 106              		.global	debounceButton2Buffer1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 3
+
+
+ 107              		.section	.data.debounceButton2Buffer1,"aw"
+ 108              		.align	2
+ 111              	debounceButton2Buffer1:
+ 112 0000 01000000 		.word	1
+ 113              		.global	button2Buffer
+ 114              		.section	.data.button2Buffer,"aw"
+ 115              		.align	2
+ 118              	button2Buffer:
+ 119 0000 01000000 		.word	1
+ 120              		.global	counterForButton2Press1s
+ 121              		.section	.data.counterForButton2Press1s,"aw"
+ 122              		.align	2
+ 125              	counterForButton2Press1s:
+ 126 0000 E8030000 		.word	1000
+ 127              		.global	flagForButton2Press1s
+ 128              		.section	.bss.flagForButton2Press1s,"aw",%nobits
+ 129              		.align	2
+ 132              	flagForButton2Press1s:
+ 133 0000 00000000 		.space	4
+ 134              		.section	.text.button2_reading,"ax",%progbits
+ 135              		.align	1
+ 136              		.global	button2_reading
+ 137              		.syntax unified
+ 138              		.thumb
+ 139              		.thumb_func
+ 140              		.fpu softvfp
+ 142              	button2_reading:
+ 143              	.LFB66:
+  19:./Core/Src/button.c **** 
+  20:./Core/Src/button.c **** /* 	BUTTON2 PARAMETER START */
+  21:./Core/Src/button.c **** int debounceButton2Buffer2=NORMAL_STATE;
+  22:./Core/Src/button.c **** int debounceButton2Buffer1=NORMAL_STATE;
+  23:./Core/Src/button.c **** int button2Buffer=NORMAL_STATE;
+  24:./Core/Src/button.c **** int counterForButton2Press1s=1000;
+  25:./Core/Src/button.c **** int flagForButton2Press1s=0;
+  26:./Core/Src/button.c **** /* 	BUTTON2 PARAMETER END */
+  27:./Core/Src/button.c **** void button2_reading(){
+ 144              		.loc 1 27 23
+ 145              		.cfi_startproc
+ 146              		@ args = 0, pretend = 0, frame = 0
+ 147              		@ frame_needed = 1, uses_anonymous_args = 0
+ 148 0000 80B5     		push	{r7, lr}
+ 149              		.cfi_def_cfa_offset 8
+ 150              		.cfi_offset 7, -8
+ 151              		.cfi_offset 14, -4
+ 152 0002 00AF     		add	r7, sp, #0
+ 153              		.cfi_def_cfa_register 7
+  28:./Core/Src/button.c **** 	debounceButton2Buffer2 =debounceButton2Buffer1;
+ 154              		.loc 1 28 25
+ 155 0004 1A4B     		ldr	r3, .L12
+ 156 0006 1B68     		ldr	r3, [r3]
+ 157 0008 1A4A     		ldr	r2, .L12+4
+ 158 000a 1360     		str	r3, [r2]
+  29:./Core/Src/button.c **** 	debounceButton2Buffer1 = HAL_GPIO_ReadPin(Button2_GPIO_Port, Button2_Pin);
+ 159              		.loc 1 29 27
+ 160 000c 1021     		movs	r1, #16
+ 161 000e 1A48     		ldr	r0, .L12+8
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 4
+
+
+ 162 0010 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 163 0014 0346     		mov	r3, r0
+ 164 0016 1A46     		mov	r2, r3
+ 165              		.loc 1 29 25
+ 166 0018 154B     		ldr	r3, .L12
+ 167 001a 1A60     		str	r2, [r3]
+  30:./Core/Src/button.c **** 	if(debounceButton2Buffer1 == debounceButton2Buffer2)
+ 168              		.loc 1 30 28
+ 169 001c 144B     		ldr	r3, .L12
+ 170 001e 1A68     		ldr	r2, [r3]
+ 171 0020 144B     		ldr	r3, .L12+4
+ 172 0022 1B68     		ldr	r3, [r3]
+ 173              		.loc 1 30 4
+ 174 0024 9A42     		cmp	r2, r3
+ 175 0026 03D1     		bne	.L7
+  31:./Core/Src/button.c **** 		button2Buffer = debounceButton2Buffer1;
+ 176              		.loc 1 31 17
+ 177 0028 114B     		ldr	r3, .L12
+ 178 002a 1B68     		ldr	r3, [r3]
+ 179 002c 134A     		ldr	r2, .L12+12
+ 180 002e 1360     		str	r3, [r2]
+ 181              	.L7:
+  32:./Core/Src/button.c **** 
+  33:./Core/Src/button.c **** 	if(button2Buffer == PRESSED_STATE){
+ 182              		.loc 1 33 19
+ 183 0030 124B     		ldr	r3, .L12+12
+ 184 0032 1B68     		ldr	r3, [r3]
+ 185              		.loc 1 33 4
+ 186 0034 002B     		cmp	r3, #0
+ 187 0036 0DD1     		bne	.L8
+  34:./Core/Src/button.c **** 	//if a button is pressed, we start counting
+  35:./Core/Src/button.c **** 		if(counterForButton2Press1s >0){
+ 188              		.loc 1 35 31
+ 189 0038 114B     		ldr	r3, .L12+16
+ 190 003a 1B68     		ldr	r3, [r3]
+ 191              		.loc 1 35 5
+ 192 003c 002B     		cmp	r3, #0
+ 193 003e 05DD     		ble	.L9
+  36:./Core/Src/button.c **** 			counterForButton2Press1s=counterForButton2Press1s-TIMER_CYCLE;
+ 194              		.loc 1 36 53
+ 195 0040 0F4B     		ldr	r3, .L12+16
+ 196 0042 1B68     		ldr	r3, [r3]
+ 197 0044 0A3B     		subs	r3, r3, #10
+ 198              		.loc 1 36 28
+ 199 0046 0E4A     		ldr	r2, .L12+16
+ 200 0048 1360     		str	r3, [r2]
+  37:./Core/Src/button.c **** 		} else {
+  38:./Core/Src/button.c **** 		//the flag is turned on when 1 second has passed
+  39:./Core/Src/button.c **** 		//since the button is pressed.
+  40:./Core/Src/button.c **** 			flagForButton2Press1s = 1;
+  41:./Core/Src/button.c **** 		}
+  42:./Core/Src/button.c **** 	}else if(button2Buffer == NORMAL_STATE){
+  43:./Core/Src/button.c **** 		counterForButton2Press1s = 1000;
+  44:./Core/Src/button.c **** 		flagForButton2Press1s = 0;
+  45:./Core/Src/button.c **** 	}
+  46:./Core/Src/button.c **** }
+ 201              		.loc 1 46 1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 5
+
+
+ 202 004a 0EE0     		b	.L11
+ 203              	.L9:
+  40:./Core/Src/button.c **** 		}
+ 204              		.loc 1 40 26
+ 205 004c 0D4B     		ldr	r3, .L12+20
+ 206 004e 0122     		movs	r2, #1
+ 207 0050 1A60     		str	r2, [r3]
+ 208              		.loc 1 46 1
+ 209 0052 0AE0     		b	.L11
+ 210              	.L8:
+  42:./Core/Src/button.c **** 		counterForButton2Press1s = 1000;
+ 211              		.loc 1 42 25
+ 212 0054 094B     		ldr	r3, .L12+12
+ 213 0056 1B68     		ldr	r3, [r3]
+  42:./Core/Src/button.c **** 		counterForButton2Press1s = 1000;
+ 214              		.loc 1 42 10
+ 215 0058 012B     		cmp	r3, #1
+ 216 005a 06D1     		bne	.L11
+  43:./Core/Src/button.c **** 		flagForButton2Press1s = 0;
+ 217              		.loc 1 43 28
+ 218 005c 084B     		ldr	r3, .L12+16
+ 219 005e 4FF47A72 		mov	r2, #1000
+ 220 0062 1A60     		str	r2, [r3]
+  44:./Core/Src/button.c **** 	}
+ 221              		.loc 1 44 25
+ 222 0064 074B     		ldr	r3, .L12+20
+ 223 0066 0022     		movs	r2, #0
+ 224 0068 1A60     		str	r2, [r3]
+ 225              	.L11:
+ 226              		.loc 1 46 1
+ 227 006a 00BF     		nop
+ 228 006c 80BD     		pop	{r7, pc}
+ 229              	.L13:
+ 230 006e 00BF     		.align	2
+ 231              	.L12:
+ 232 0070 00000000 		.word	debounceButton2Buffer1
+ 233 0074 00000000 		.word	debounceButton2Buffer2
+ 234 0078 00080140 		.word	1073809408
+ 235 007c 00000000 		.word	button2Buffer
+ 236 0080 00000000 		.word	counterForButton2Press1s
+ 237 0084 00000000 		.word	flagForButton2Press1s
+ 238              		.cfi_endproc
+ 239              	.LFE66:
+ 241              		.global	debounceButton3Buffer2
+ 242              		.section	.data.debounceButton3Buffer2,"aw"
+ 243              		.align	2
+ 246              	debounceButton3Buffer2:
+ 247 0000 01000000 		.word	1
+ 248              		.global	debounceButton3Buffer1
+ 249              		.section	.data.debounceButton3Buffer1,"aw"
+ 250              		.align	2
+ 253              	debounceButton3Buffer1:
+ 254 0000 01000000 		.word	1
+ 255              		.global	button3Buffer
+ 256              		.section	.data.button3Buffer,"aw"
+ 257              		.align	2
+ 260              	button3Buffer:
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 6
+
+
+ 261 0000 01000000 		.word	1
+ 262              		.section	.text.button3_reading,"ax",%progbits
+ 263              		.align	1
+ 264              		.global	button3_reading
+ 265              		.syntax unified
+ 266              		.thumb
+ 267              		.thumb_func
+ 268              		.fpu softvfp
+ 270              	button3_reading:
+ 271              	.LFB67:
+  47:./Core/Src/button.c **** 
+  48:./Core/Src/button.c **** /* 	BUTTON3 PARAMETER START */
+  49:./Core/Src/button.c **** int debounceButton3Buffer2=NORMAL_STATE;
+  50:./Core/Src/button.c **** int debounceButton3Buffer1=NORMAL_STATE;
+  51:./Core/Src/button.c **** int button3Buffer=NORMAL_STATE;
+  52:./Core/Src/button.c **** /* 	BUTTON3 PARAMETER END */
+  53:./Core/Src/button.c **** void button3_reading(){
+ 272              		.loc 1 53 23
+ 273              		.cfi_startproc
+ 274              		@ args = 0, pretend = 0, frame = 0
+ 275              		@ frame_needed = 1, uses_anonymous_args = 0
+ 276 0000 80B5     		push	{r7, lr}
+ 277              		.cfi_def_cfa_offset 8
+ 278              		.cfi_offset 7, -8
+ 279              		.cfi_offset 14, -4
+ 280 0002 00AF     		add	r7, sp, #0
+ 281              		.cfi_def_cfa_register 7
+  54:./Core/Src/button.c **** 	debounceButton3Buffer2 =debounceButton3Buffer1;
+ 282              		.loc 1 54 25
+ 283 0004 0B4B     		ldr	r3, .L17
+ 284 0006 1B68     		ldr	r3, [r3]
+ 285 0008 0B4A     		ldr	r2, .L17+4
+ 286 000a 1360     		str	r3, [r2]
+  55:./Core/Src/button.c **** 	debounceButton3Buffer1 = HAL_GPIO_ReadPin(Button3_GPIO_Port, Button3_Pin);
+ 287              		.loc 1 55 27
+ 288 000c 0121     		movs	r1, #1
+ 289 000e 0B48     		ldr	r0, .L17+8
+ 290 0010 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 291 0014 0346     		mov	r3, r0
+ 292 0016 1A46     		mov	r2, r3
+ 293              		.loc 1 55 25
+ 294 0018 064B     		ldr	r3, .L17
+ 295 001a 1A60     		str	r2, [r3]
+  56:./Core/Src/button.c **** 	if(debounceButton3Buffer1 == debounceButton3Buffer2)
+ 296              		.loc 1 56 28
+ 297 001c 054B     		ldr	r3, .L17
+ 298 001e 1A68     		ldr	r2, [r3]
+ 299 0020 054B     		ldr	r3, .L17+4
+ 300 0022 1B68     		ldr	r3, [r3]
+ 301              		.loc 1 56 4
+ 302 0024 9A42     		cmp	r2, r3
+ 303 0026 03D1     		bne	.L16
+  57:./Core/Src/button.c **** 		button3Buffer = debounceButton3Buffer1;
+ 304              		.loc 1 57 17
+ 305 0028 024B     		ldr	r3, .L17
+ 306 002a 1B68     		ldr	r3, [r3]
+ 307 002c 044A     		ldr	r2, .L17+12
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 7
+
+
+ 308 002e 1360     		str	r3, [r2]
+ 309              	.L16:
+  58:./Core/Src/button.c **** }
+ 310              		.loc 1 58 1
+ 311 0030 00BF     		nop
+ 312 0032 80BD     		pop	{r7, pc}
+ 313              	.L18:
+ 314              		.align	2
+ 315              	.L17:
+ 316 0034 00000000 		.word	debounceButton3Buffer1
+ 317 0038 00000000 		.word	debounceButton3Buffer2
+ 318 003c 000C0140 		.word	1073810432
+ 319 0040 00000000 		.word	button3Buffer
+ 320              		.cfi_endproc
+ 321              	.LFE67:
+ 323              		.global	debounceButton4Buffer2
+ 324              		.section	.data.debounceButton4Buffer2,"aw"
+ 325              		.align	2
+ 328              	debounceButton4Buffer2:
+ 329 0000 01000000 		.word	1
+ 330              		.global	debounceButton4Buffer1
+ 331              		.section	.data.debounceButton4Buffer1,"aw"
+ 332              		.align	2
+ 335              	debounceButton4Buffer1:
+ 336 0000 01000000 		.word	1
+ 337              		.global	button4Buffer
+ 338              		.section	.data.button4Buffer,"aw"
+ 339              		.align	2
+ 342              	button4Buffer:
+ 343 0000 01000000 		.word	1
+ 344              		.section	.text.button4_reading,"ax",%progbits
+ 345              		.align	1
+ 346              		.global	button4_reading
+ 347              		.syntax unified
+ 348              		.thumb
+ 349              		.thumb_func
+ 350              		.fpu softvfp
+ 352              	button4_reading:
+ 353              	.LFB68:
+  59:./Core/Src/button.c **** 
+  60:./Core/Src/button.c **** /* 	BUTTON4 PARAMETER START */
+  61:./Core/Src/button.c **** int debounceButton4Buffer2=NORMAL_STATE;
+  62:./Core/Src/button.c **** int debounceButton4Buffer1=NORMAL_STATE;
+  63:./Core/Src/button.c **** int button4Buffer=NORMAL_STATE;
+  64:./Core/Src/button.c **** /* 	BUTTON4 PARAMETER END */
+  65:./Core/Src/button.c **** void button4_reading(){
+ 354              		.loc 1 65 23
+ 355              		.cfi_startproc
+ 356              		@ args = 0, pretend = 0, frame = 0
+ 357              		@ frame_needed = 1, uses_anonymous_args = 0
+ 358 0000 80B5     		push	{r7, lr}
+ 359              		.cfi_def_cfa_offset 8
+ 360              		.cfi_offset 7, -8
+ 361              		.cfi_offset 14, -4
+ 362 0002 00AF     		add	r7, sp, #0
+ 363              		.cfi_def_cfa_register 7
+  66:./Core/Src/button.c **** 	debounceButton4Buffer2 =debounceButton4Buffer1;
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 8
+
+
+ 364              		.loc 1 66 25
+ 365 0004 0B4B     		ldr	r3, .L22
+ 366 0006 1B68     		ldr	r3, [r3]
+ 367 0008 0B4A     		ldr	r2, .L22+4
+ 368 000a 1360     		str	r3, [r2]
+  67:./Core/Src/button.c **** 	debounceButton4Buffer1 = HAL_GPIO_ReadPin(Button4_GPIO_Port, Button4_Pin);
+ 369              		.loc 1 67 27
+ 370 000c 0121     		movs	r1, #1
+ 371 000e 0B48     		ldr	r0, .L22+8
+ 372 0010 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 373 0014 0346     		mov	r3, r0
+ 374 0016 1A46     		mov	r2, r3
+ 375              		.loc 1 67 25
+ 376 0018 064B     		ldr	r3, .L22
+ 377 001a 1A60     		str	r2, [r3]
+  68:./Core/Src/button.c **** 	if(debounceButton4Buffer1 == debounceButton4Buffer2)
+ 378              		.loc 1 68 28
+ 379 001c 054B     		ldr	r3, .L22
+ 380 001e 1A68     		ldr	r2, [r3]
+ 381 0020 054B     		ldr	r3, .L22+4
+ 382 0022 1B68     		ldr	r3, [r3]
+ 383              		.loc 1 68 4
+ 384 0024 9A42     		cmp	r2, r3
+ 385 0026 03D1     		bne	.L21
+  69:./Core/Src/button.c **** 		button4Buffer = debounceButton4Buffer1;
+ 386              		.loc 1 69 17
+ 387 0028 024B     		ldr	r3, .L22
+ 388 002a 1B68     		ldr	r3, [r3]
+ 389 002c 044A     		ldr	r2, .L22+12
+ 390 002e 1360     		str	r3, [r2]
+ 391              	.L21:
+  70:./Core/Src/button.c **** }
+ 392              		.loc 1 70 1
+ 393 0030 00BF     		nop
+ 394 0032 80BD     		pop	{r7, pc}
+ 395              	.L23:
+ 396              		.align	2
+ 397              	.L22:
+ 398 0034 00000000 		.word	debounceButton4Buffer1
+ 399 0038 00000000 		.word	debounceButton4Buffer2
+ 400 003c 00080140 		.word	1073809408
+ 401 0040 00000000 		.word	button4Buffer
+ 402              		.cfi_endproc
+ 403              	.LFE68:
+ 405              		.section	.text.button1_pressed,"ax",%progbits
+ 406              		.align	1
+ 407              		.global	button1_pressed
+ 408              		.syntax unified
+ 409              		.thumb
+ 410              		.thumb_func
+ 411              		.fpu softvfp
+ 413              	button1_pressed:
+ 414              	.LFB69:
+  71:./Core/Src/button.c **** 
+  72:./Core/Src/button.c **** int button1_pressed(){
+ 415              		.loc 1 72 22
+ 416              		.cfi_startproc
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 9
+
+
+ 417              		@ args = 0, pretend = 0, frame = 0
+ 418              		@ frame_needed = 1, uses_anonymous_args = 0
+ 419              		@ link register save eliminated.
+ 420 0000 80B4     		push	{r7}
+ 421              		.cfi_def_cfa_offset 4
+ 422              		.cfi_offset 7, -4
+ 423 0002 00AF     		add	r7, sp, #0
+ 424              		.cfi_def_cfa_register 7
+  73:./Core/Src/button.c **** 	return (button1Buffer == PRESSED_STATE);
+ 425              		.loc 1 73 24
+ 426 0004 054B     		ldr	r3, .L26
+ 427 0006 1B68     		ldr	r3, [r3]
+ 428 0008 002B     		cmp	r3, #0
+ 429 000a 0CBF     		ite	eq
+ 430 000c 0123     		moveq	r3, #1
+ 431 000e 0023     		movne	r3, #0
+ 432 0010 DBB2     		uxtb	r3, r3
+  74:./Core/Src/button.c **** }
+ 433              		.loc 1 74 1
+ 434 0012 1846     		mov	r0, r3
+ 435 0014 BD46     		mov	sp, r7
+ 436              		.cfi_def_cfa_register 13
+ 437              		@ sp needed
+ 438 0016 80BC     		pop	{r7}
+ 439              		.cfi_restore 7
+ 440              		.cfi_def_cfa_offset 0
+ 441 0018 7047     		bx	lr
+ 442              	.L27:
+ 443 001a 00BF     		.align	2
+ 444              	.L26:
+ 445 001c 00000000 		.word	button1Buffer
+ 446              		.cfi_endproc
+ 447              	.LFE69:
+ 449              		.section	.text.button2_pressed,"ax",%progbits
+ 450              		.align	1
+ 451              		.global	button2_pressed
+ 452              		.syntax unified
+ 453              		.thumb
+ 454              		.thumb_func
+ 455              		.fpu softvfp
+ 457              	button2_pressed:
+ 458              	.LFB70:
+  75:./Core/Src/button.c **** 
+  76:./Core/Src/button.c **** int button2_pressed(){
+ 459              		.loc 1 76 22
+ 460              		.cfi_startproc
+ 461              		@ args = 0, pretend = 0, frame = 0
+ 462              		@ frame_needed = 1, uses_anonymous_args = 0
+ 463              		@ link register save eliminated.
+ 464 0000 80B4     		push	{r7}
+ 465              		.cfi_def_cfa_offset 4
+ 466              		.cfi_offset 7, -4
+ 467 0002 00AF     		add	r7, sp, #0
+ 468              		.cfi_def_cfa_register 7
+  77:./Core/Src/button.c **** 	return (button2Buffer == PRESSED_STATE);
+ 469              		.loc 1 77 24
+ 470 0004 054B     		ldr	r3, .L30
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 10
+
+
+ 471 0006 1B68     		ldr	r3, [r3]
+ 472 0008 002B     		cmp	r3, #0
+ 473 000a 0CBF     		ite	eq
+ 474 000c 0123     		moveq	r3, #1
+ 475 000e 0023     		movne	r3, #0
+ 476 0010 DBB2     		uxtb	r3, r3
+  78:./Core/Src/button.c **** }
+ 477              		.loc 1 78 1
+ 478 0012 1846     		mov	r0, r3
+ 479 0014 BD46     		mov	sp, r7
+ 480              		.cfi_def_cfa_register 13
+ 481              		@ sp needed
+ 482 0016 80BC     		pop	{r7}
+ 483              		.cfi_restore 7
+ 484              		.cfi_def_cfa_offset 0
+ 485 0018 7047     		bx	lr
+ 486              	.L31:
+ 487 001a 00BF     		.align	2
+ 488              	.L30:
+ 489 001c 00000000 		.word	button2Buffer
+ 490              		.cfi_endproc
+ 491              	.LFE70:
+ 493              		.section	.text.button2_pressed_1s,"ax",%progbits
+ 494              		.align	1
+ 495              		.global	button2_pressed_1s
+ 496              		.syntax unified
+ 497              		.thumb
+ 498              		.thumb_func
+ 499              		.fpu softvfp
+ 501              	button2_pressed_1s:
+ 502              	.LFB71:
+  79:./Core/Src/button.c **** int button2_pressed_1s(){
+ 503              		.loc 1 79 25
+ 504              		.cfi_startproc
+ 505              		@ args = 0, pretend = 0, frame = 0
+ 506              		@ frame_needed = 1, uses_anonymous_args = 0
+ 507              		@ link register save eliminated.
+ 508 0000 80B4     		push	{r7}
+ 509              		.cfi_def_cfa_offset 4
+ 510              		.cfi_offset 7, -4
+ 511 0002 00AF     		add	r7, sp, #0
+ 512              		.cfi_def_cfa_register 7
+  80:./Core/Src/button.c **** 	return (flagForButton2Press1s == 1);
+ 513              		.loc 1 80 32
+ 514 0004 054B     		ldr	r3, .L34
+ 515 0006 1B68     		ldr	r3, [r3]
+ 516 0008 012B     		cmp	r3, #1
+ 517 000a 0CBF     		ite	eq
+ 518 000c 0123     		moveq	r3, #1
+ 519 000e 0023     		movne	r3, #0
+ 520 0010 DBB2     		uxtb	r3, r3
+  81:./Core/Src/button.c **** }
+ 521              		.loc 1 81 1
+ 522 0012 1846     		mov	r0, r3
+ 523 0014 BD46     		mov	sp, r7
+ 524              		.cfi_def_cfa_register 13
+ 525              		@ sp needed
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 11
+
+
+ 526 0016 80BC     		pop	{r7}
+ 527              		.cfi_restore 7
+ 528              		.cfi_def_cfa_offset 0
+ 529 0018 7047     		bx	lr
+ 530              	.L35:
+ 531 001a 00BF     		.align	2
+ 532              	.L34:
+ 533 001c 00000000 		.word	flagForButton2Press1s
+ 534              		.cfi_endproc
+ 535              	.LFE71:
+ 537              		.section	.text.button3_pressed,"ax",%progbits
+ 538              		.align	1
+ 539              		.global	button3_pressed
+ 540              		.syntax unified
+ 541              		.thumb
+ 542              		.thumb_func
+ 543              		.fpu softvfp
+ 545              	button3_pressed:
+ 546              	.LFB72:
+  82:./Core/Src/button.c **** 
+  83:./Core/Src/button.c **** int button3_pressed(){
+ 547              		.loc 1 83 22
+ 548              		.cfi_startproc
+ 549              		@ args = 0, pretend = 0, frame = 0
+ 550              		@ frame_needed = 1, uses_anonymous_args = 0
+ 551              		@ link register save eliminated.
+ 552 0000 80B4     		push	{r7}
+ 553              		.cfi_def_cfa_offset 4
+ 554              		.cfi_offset 7, -4
+ 555 0002 00AF     		add	r7, sp, #0
+ 556              		.cfi_def_cfa_register 7
+  84:./Core/Src/button.c **** 	return (button3Buffer == PRESSED_STATE);
+ 557              		.loc 1 84 24
+ 558 0004 054B     		ldr	r3, .L38
+ 559 0006 1B68     		ldr	r3, [r3]
+ 560 0008 002B     		cmp	r3, #0
+ 561 000a 0CBF     		ite	eq
+ 562 000c 0123     		moveq	r3, #1
+ 563 000e 0023     		movne	r3, #0
+ 564 0010 DBB2     		uxtb	r3, r3
+  85:./Core/Src/button.c **** }
+ 565              		.loc 1 85 1
+ 566 0012 1846     		mov	r0, r3
+ 567 0014 BD46     		mov	sp, r7
+ 568              		.cfi_def_cfa_register 13
+ 569              		@ sp needed
+ 570 0016 80BC     		pop	{r7}
+ 571              		.cfi_restore 7
+ 572              		.cfi_def_cfa_offset 0
+ 573 0018 7047     		bx	lr
+ 574              	.L39:
+ 575 001a 00BF     		.align	2
+ 576              	.L38:
+ 577 001c 00000000 		.word	button3Buffer
+ 578              		.cfi_endproc
+ 579              	.LFE72:
+ 581              		.section	.text.button4_pressed,"ax",%progbits
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 12
+
+
+ 582              		.align	1
+ 583              		.global	button4_pressed
+ 584              		.syntax unified
+ 585              		.thumb
+ 586              		.thumb_func
+ 587              		.fpu softvfp
+ 589              	button4_pressed:
+ 590              	.LFB73:
+  86:./Core/Src/button.c **** 
+  87:./Core/Src/button.c **** int button4_pressed(){
+ 591              		.loc 1 87 22
+ 592              		.cfi_startproc
+ 593              		@ args = 0, pretend = 0, frame = 0
+ 594              		@ frame_needed = 1, uses_anonymous_args = 0
+ 595              		@ link register save eliminated.
+ 596 0000 80B4     		push	{r7}
+ 597              		.cfi_def_cfa_offset 4
+ 598              		.cfi_offset 7, -4
+ 599 0002 00AF     		add	r7, sp, #0
+ 600              		.cfi_def_cfa_register 7
+  88:./Core/Src/button.c **** 	return (button4Buffer == PRESSED_STATE);
+ 601              		.loc 1 88 24
+ 602 0004 054B     		ldr	r3, .L42
+ 603 0006 1B68     		ldr	r3, [r3]
+ 604 0008 002B     		cmp	r3, #0
+ 605 000a 0CBF     		ite	eq
+ 606 000c 0123     		moveq	r3, #1
+ 607 000e 0023     		movne	r3, #0
+ 608 0010 DBB2     		uxtb	r3, r3
+  89:./Core/Src/button.c **** }
+ 609              		.loc 1 89 1
+ 610 0012 1846     		mov	r0, r3
+ 611 0014 BD46     		mov	sp, r7
+ 612              		.cfi_def_cfa_register 13
+ 613              		@ sp needed
+ 614 0016 80BC     		pop	{r7}
+ 615              		.cfi_restore 7
+ 616              		.cfi_def_cfa_offset 0
+ 617 0018 7047     		bx	lr
+ 618              	.L43:
+ 619 001a 00BF     		.align	2
+ 620              	.L42:
+ 621 001c 00000000 		.word	button4Buffer
+ 622              		.cfi_endproc
+ 623              	.LFE73:
+ 625              		.text
+ 626              	.Letext0:
+ 627              		.file 2 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 628              		.file 3 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 629              		.file 4 "Drivers/CMSIS/Include/core_cm3.h"
+ 630              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 631              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 632              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 13
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 button.c
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:20     .data.debounceButton1Buffer2:0000000000000000 debounceButton1Buffer2
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:17     .data.debounceButton1Buffer2:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:27     .data.debounceButton1Buffer1:0000000000000000 debounceButton1Buffer1
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:24     .data.debounceButton1Buffer1:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:34     .data.button1Buffer:0000000000000000 button1Buffer
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:31     .data.button1Buffer:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:37     .text.button1_reading:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:45     .text.button1_reading:0000000000000000 button1_reading
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:92     .text.button1_reading:0000000000000034 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:104    .data.debounceButton2Buffer2:0000000000000000 debounceButton2Buffer2
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:101    .data.debounceButton2Buffer2:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:111    .data.debounceButton2Buffer1:0000000000000000 debounceButton2Buffer1
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:108    .data.debounceButton2Buffer1:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:118    .data.button2Buffer:0000000000000000 button2Buffer
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:115    .data.button2Buffer:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:125    .data.counterForButton2Press1s:0000000000000000 counterForButton2Press1s
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:122    .data.counterForButton2Press1s:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:132    .bss.flagForButton2Press1s:0000000000000000 flagForButton2Press1s
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:129    .bss.flagForButton2Press1s:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:135    .text.button2_reading:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:142    .text.button2_reading:0000000000000000 button2_reading
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:232    .text.button2_reading:0000000000000070 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:246    .data.debounceButton3Buffer2:0000000000000000 debounceButton3Buffer2
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:243    .data.debounceButton3Buffer2:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:253    .data.debounceButton3Buffer1:0000000000000000 debounceButton3Buffer1
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:250    .data.debounceButton3Buffer1:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:260    .data.button3Buffer:0000000000000000 button3Buffer
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:257    .data.button3Buffer:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:263    .text.button3_reading:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:270    .text.button3_reading:0000000000000000 button3_reading
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:316    .text.button3_reading:0000000000000034 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:328    .data.debounceButton4Buffer2:0000000000000000 debounceButton4Buffer2
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:325    .data.debounceButton4Buffer2:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:335    .data.debounceButton4Buffer1:0000000000000000 debounceButton4Buffer1
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:332    .data.debounceButton4Buffer1:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:342    .data.button4Buffer:0000000000000000 button4Buffer
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:339    .data.button4Buffer:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:345    .text.button4_reading:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:352    .text.button4_reading:0000000000000000 button4_reading
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:398    .text.button4_reading:0000000000000034 $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:406    .text.button1_pressed:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:413    .text.button1_pressed:0000000000000000 button1_pressed
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:445    .text.button1_pressed:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:450    .text.button2_pressed:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:457    .text.button2_pressed:0000000000000000 button2_pressed
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:489    .text.button2_pressed:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:494    .text.button2_pressed_1s:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:501    .text.button2_pressed_1s:0000000000000000 button2_pressed_1s
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:533    .text.button2_pressed_1s:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:538    .text.button3_pressed:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:545    .text.button3_pressed:0000000000000000 button3_pressed
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:577    .text.button3_pressed:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:582    .text.button4_pressed:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:589    .text.button4_pressed:0000000000000000 button4_pressed
+C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s:621    .text.button4_pressed:000000000000001c $d
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZYy81f.s 			page 14
+
+
+                           .group:0000000000000000 wm4.0.e890922d021f7fff2fbf219cb2b38f03
+                           .group:0000000000000000 wm4.stm32f1xx_hal_conf.h.22.844a2f06328adeab13e6d7f89c6deb9b
+                           .group:0000000000000000 wm4.stm32f1xx.h.39.208bb8a61c892b7c37d899c49a031330
+                           .group:0000000000000000 wm4.stm32f103xb.h.38.ec967d5ad9d3269cb0788eebda048e38
+                           .group:0000000000000000 wm4._newlib_version.h.4.1ef4e12f167f8b69d7c30054be56050d
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.cmsis_version.h.32.4d5822004c01a829a975260e854b5f8e
+                           .group:0000000000000000 wm4.core_cm3.h.66.fc46cac19810db8f98d67da7ef88f42c
+                           .group:0000000000000000 wm4.cmsis_gcc.h.26.225e4f5469716fdeef823d1102f5b23e
+                           .group:0000000000000000 wm4.core_cm3.h.127.f4474120f1a7524deb56f9d74ff175da
+                           .group:0000000000000000 wm4.stm32f103xb.h.573.10249aa7473ca93be896fed94046a725
+                           .group:0000000000000000 wm4.stm32f1xx.h.162.96b09079a093c34dbd7f0b85cbd0ddee
+                           .group:0000000000000000 wm4.stm32_hal_legacy.h.23.91ba5b544a4c2be2620a1e7ff0049e10
+                           .group:0000000000000000 wm4.stddef.h.39.144cf5ddcd53cbfdac30259dc1a6c87f
+                           .group:0000000000000000 wm4.stm32f1xx_hal_def.h.57.18d01ce1aa74e9fb44dbf16f821a574a
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc.h.95.21591bbc513aaa813c0b8640c3b32517
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc_ex.h.22.8763f99bc1e3e2dcf0febe9161d81b37
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc.h.1202.f8e5f9e0cf4eef7840facf5396029056
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio.h.22.fa638d688dcc57ca806fe6a7831b0d04
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio_ex.h.22.51a50ef3512cd78017ce666a32d364bf
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio.h.263.f5ebf2f545ade59412ab9261c8e35dc4
+                           .group:0000000000000000 wm4.stm32f1xx_hal_exti.h.22.e26491d042c8079c3ca67eca341af862
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma.h.22.3c14338534886827bf3aeaa2a7f412a1
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma_ex.h.22.001ac4d7f81ccbdcae49bd65c13858c8
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma.h.409.cafcd2cfe701091535636be537c18293
+                           .group:0000000000000000 wm4.stm32f1xx_hal_cortex.h.22.b5f4174bb6a50d95405567b8f50e0900
+                           .group:0000000000000000 wm4.stm32f1xx_hal_flash.h.22.5cea9a7210e6315b41724b47b5fdf203
+                           .group:0000000000000000 wm4.stm32f1xx_hal_flash_ex.h.22.d4e19c21f2a86fa2f8ec2c2d5f1ab2af
+                           .group:0000000000000000 wm4.stm32f1xx_hal_pwr.h.22.3438c476faafc3240bf146f143df3fcd
+                           .group:0000000000000000 wm4.stm32f1xx_hal_tim.h.22.a16e206564e97dbace9faae59a0d6008
+                           .group:0000000000000000 wm4.stm32f1xx_hal_uart.h.22.5f7992e497faa36aa98f09f7214f4dbb
+                           .group:0000000000000000 wm4.stm32f1xx_hal.h.88.91065c0692bed6019c34f1e9c00589fd
+                           .group:0000000000000000 wm4.main.h.63.5431060b74a10c9c4e0db1c5d549add8
+                           .group:0000000000000000 wm4.button.h.13.96c13931ad5bdf898c162642e02d1e55
+
+UNDEFINED SYMBOLS
+HAL_GPIO_ReadPin

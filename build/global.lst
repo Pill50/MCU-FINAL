@@ -1,0 +1,38 @@
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccHuEtKl.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"global.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	traffic_light_num,50,4
+  16              		.global	pwm
+  17              		.section	.bss.pwm,"aw",%nobits
+  18              		.align	2
+  21              	pwm:
+  22 0000 00000000 		.space	4
+  23              		.text
+  24              	.Letext0:
+  25              		.file 1 "./Core/Src/global.c"
+  26              		.file 2 "Core/Inc/global.h"
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccHuEtKl.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 global.c
+                            *COM*:0000000000000032 traffic_light_num
+C:\Users\DELL\AppData\Local\Temp\ccHuEtKl.s:21     .bss.pwm:0000000000000000 pwm
+C:\Users\DELL\AppData\Local\Temp\ccHuEtKl.s:18     .bss.pwm:0000000000000000 $d
+                           .group:0000000000000000 wm4.0.e890922d021f7fff2fbf219cb2b38f03
+
+NO UNDEFINED SYMBOLS

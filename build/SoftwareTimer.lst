@@ -1,0 +1,504 @@
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"SoftwareTimer.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	counter1,4,4
+  16              		.comm	timer1_flag,4,4
+  17              		.comm	counter2,4,4
+  18              		.comm	timer2_flag,4,4
+  19              		.comm	counter3,4,4
+  20              		.comm	timer3_flag,4,4
+  21              		.comm	counter4,4,4
+  22              		.comm	timer4_flag,4,4
+  23              		.global	TIMER_CYCLE
+  24              		.section	.data.TIMER_CYCLE,"aw"
+  25              		.align	2
+  28              	TIMER_CYCLE:
+  29 0000 0A000000 		.word	10
+  30              		.section	.text.setTimer1,"ax",%progbits
+  31              		.align	1
+  32              		.global	setTimer1
+  33              		.arch armv7-m
+  34              		.syntax unified
+  35              		.thumb
+  36              		.thumb_func
+  37              		.fpu softvfp
+  39              	setTimer1:
+  40              	.LFB0:
+  41              		.file 1 "./Core/Src/SoftwareTimer.c"
+   1:./Core/Src/SoftwareTimer.c **** /*
+   2:./Core/Src/SoftwareTimer.c ****  * SoftwareTimer.c
+   3:./Core/Src/SoftwareTimer.c ****  *
+   4:./Core/Src/SoftwareTimer.c ****  *  Created on: Sep 28, 2022
+   5:./Core/Src/SoftwareTimer.c ****  *      Author: DELL
+   6:./Core/Src/SoftwareTimer.c ****  */
+   7:./Core/Src/SoftwareTimer.c **** #include "SoftwareTimer.h"
+   8:./Core/Src/SoftwareTimer.c **** int counter1;
+   9:./Core/Src/SoftwareTimer.c **** int timer1_flag;
+  10:./Core/Src/SoftwareTimer.c **** 
+  11:./Core/Src/SoftwareTimer.c **** int counter2;
+  12:./Core/Src/SoftwareTimer.c **** int timer2_flag;
+  13:./Core/Src/SoftwareTimer.c **** 
+  14:./Core/Src/SoftwareTimer.c **** int counter3;
+  15:./Core/Src/SoftwareTimer.c **** int timer3_flag;
+  16:./Core/Src/SoftwareTimer.c **** 
+  17:./Core/Src/SoftwareTimer.c **** int counter4;
+  18:./Core/Src/SoftwareTimer.c **** int timer4_flag;
+  19:./Core/Src/SoftwareTimer.c **** 
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 2
+
+
+  20:./Core/Src/SoftwareTimer.c **** int TIMER_CYCLE=10;
+  21:./Core/Src/SoftwareTimer.c **** 
+  22:./Core/Src/SoftwareTimer.c **** void setTimer1(int duration){
+  42              		.loc 1 22 29
+  43              		.cfi_startproc
+  44              		@ args = 0, pretend = 0, frame = 8
+  45              		@ frame_needed = 1, uses_anonymous_args = 0
+  46              		@ link register save eliminated.
+  47 0000 80B4     		push	{r7}
+  48              		.cfi_def_cfa_offset 4
+  49              		.cfi_offset 7, -4
+  50 0002 83B0     		sub	sp, sp, #12
+  51              		.cfi_def_cfa_offset 16
+  52 0004 00AF     		add	r7, sp, #0
+  53              		.cfi_def_cfa_register 7
+  54 0006 7860     		str	r0, [r7, #4]
+  23:./Core/Src/SoftwareTimer.c **** 	counter1=duration/TIMER_CYCLE;
+  55              		.loc 1 23 19
+  56 0008 074B     		ldr	r3, .L2
+  57 000a 1B68     		ldr	r3, [r3]
+  58 000c 7A68     		ldr	r2, [r7, #4]
+  59 000e 92FBF3F3 		sdiv	r3, r2, r3
+  60              		.loc 1 23 10
+  61 0012 064A     		ldr	r2, .L2+4
+  62 0014 1360     		str	r3, [r2]
+  24:./Core/Src/SoftwareTimer.c **** 	timer1_flag=0;
+  63              		.loc 1 24 13
+  64 0016 064B     		ldr	r3, .L2+8
+  65 0018 0022     		movs	r2, #0
+  66 001a 1A60     		str	r2, [r3]
+  25:./Core/Src/SoftwareTimer.c **** }
+  67              		.loc 1 25 1
+  68 001c 00BF     		nop
+  69 001e 0C37     		adds	r7, r7, #12
+  70              		.cfi_def_cfa_offset 4
+  71 0020 BD46     		mov	sp, r7
+  72              		.cfi_def_cfa_register 13
+  73              		@ sp needed
+  74 0022 80BC     		pop	{r7}
+  75              		.cfi_restore 7
+  76              		.cfi_def_cfa_offset 0
+  77 0024 7047     		bx	lr
+  78              	.L3:
+  79 0026 00BF     		.align	2
+  80              	.L2:
+  81 0028 00000000 		.word	TIMER_CYCLE
+  82 002c 00000000 		.word	counter1
+  83 0030 00000000 		.word	timer1_flag
+  84              		.cfi_endproc
+  85              	.LFE0:
+  87              		.section	.text.setTimer2,"ax",%progbits
+  88              		.align	1
+  89              		.global	setTimer2
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  93              		.fpu softvfp
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 3
+
+
+  95              	setTimer2:
+  96              	.LFB1:
+  26:./Core/Src/SoftwareTimer.c **** 
+  27:./Core/Src/SoftwareTimer.c **** void setTimer2(int duration){
+  97              		.loc 1 27 29
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 8
+ 100              		@ frame_needed = 1, uses_anonymous_args = 0
+ 101              		@ link register save eliminated.
+ 102 0000 80B4     		push	{r7}
+ 103              		.cfi_def_cfa_offset 4
+ 104              		.cfi_offset 7, -4
+ 105 0002 83B0     		sub	sp, sp, #12
+ 106              		.cfi_def_cfa_offset 16
+ 107 0004 00AF     		add	r7, sp, #0
+ 108              		.cfi_def_cfa_register 7
+ 109 0006 7860     		str	r0, [r7, #4]
+  28:./Core/Src/SoftwareTimer.c **** 	counter2=duration/TIMER_CYCLE;
+ 110              		.loc 1 28 19
+ 111 0008 074B     		ldr	r3, .L5
+ 112 000a 1B68     		ldr	r3, [r3]
+ 113 000c 7A68     		ldr	r2, [r7, #4]
+ 114 000e 92FBF3F3 		sdiv	r3, r2, r3
+ 115              		.loc 1 28 10
+ 116 0012 064A     		ldr	r2, .L5+4
+ 117 0014 1360     		str	r3, [r2]
+  29:./Core/Src/SoftwareTimer.c **** 	timer2_flag=0;
+ 118              		.loc 1 29 13
+ 119 0016 064B     		ldr	r3, .L5+8
+ 120 0018 0022     		movs	r2, #0
+ 121 001a 1A60     		str	r2, [r3]
+  30:./Core/Src/SoftwareTimer.c **** }
+ 122              		.loc 1 30 1
+ 123 001c 00BF     		nop
+ 124 001e 0C37     		adds	r7, r7, #12
+ 125              		.cfi_def_cfa_offset 4
+ 126 0020 BD46     		mov	sp, r7
+ 127              		.cfi_def_cfa_register 13
+ 128              		@ sp needed
+ 129 0022 80BC     		pop	{r7}
+ 130              		.cfi_restore 7
+ 131              		.cfi_def_cfa_offset 0
+ 132 0024 7047     		bx	lr
+ 133              	.L6:
+ 134 0026 00BF     		.align	2
+ 135              	.L5:
+ 136 0028 00000000 		.word	TIMER_CYCLE
+ 137 002c 00000000 		.word	counter2
+ 138 0030 00000000 		.word	timer2_flag
+ 139              		.cfi_endproc
+ 140              	.LFE1:
+ 142              		.section	.text.setTimer3,"ax",%progbits
+ 143              		.align	1
+ 144              		.global	setTimer3
+ 145              		.syntax unified
+ 146              		.thumb
+ 147              		.thumb_func
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 4
+
+
+ 148              		.fpu softvfp
+ 150              	setTimer3:
+ 151              	.LFB2:
+  31:./Core/Src/SoftwareTimer.c **** 
+  32:./Core/Src/SoftwareTimer.c **** void setTimer3(int duration){
+ 152              		.loc 1 32 29
+ 153              		.cfi_startproc
+ 154              		@ args = 0, pretend = 0, frame = 8
+ 155              		@ frame_needed = 1, uses_anonymous_args = 0
+ 156              		@ link register save eliminated.
+ 157 0000 80B4     		push	{r7}
+ 158              		.cfi_def_cfa_offset 4
+ 159              		.cfi_offset 7, -4
+ 160 0002 83B0     		sub	sp, sp, #12
+ 161              		.cfi_def_cfa_offset 16
+ 162 0004 00AF     		add	r7, sp, #0
+ 163              		.cfi_def_cfa_register 7
+ 164 0006 7860     		str	r0, [r7, #4]
+  33:./Core/Src/SoftwareTimer.c **** 	counter3=duration/TIMER_CYCLE;
+ 165              		.loc 1 33 19
+ 166 0008 074B     		ldr	r3, .L8
+ 167 000a 1B68     		ldr	r3, [r3]
+ 168 000c 7A68     		ldr	r2, [r7, #4]
+ 169 000e 92FBF3F3 		sdiv	r3, r2, r3
+ 170              		.loc 1 33 10
+ 171 0012 064A     		ldr	r2, .L8+4
+ 172 0014 1360     		str	r3, [r2]
+  34:./Core/Src/SoftwareTimer.c **** 	timer3_flag=0;
+ 173              		.loc 1 34 13
+ 174 0016 064B     		ldr	r3, .L8+8
+ 175 0018 0022     		movs	r2, #0
+ 176 001a 1A60     		str	r2, [r3]
+  35:./Core/Src/SoftwareTimer.c **** }
+ 177              		.loc 1 35 1
+ 178 001c 00BF     		nop
+ 179 001e 0C37     		adds	r7, r7, #12
+ 180              		.cfi_def_cfa_offset 4
+ 181 0020 BD46     		mov	sp, r7
+ 182              		.cfi_def_cfa_register 13
+ 183              		@ sp needed
+ 184 0022 80BC     		pop	{r7}
+ 185              		.cfi_restore 7
+ 186              		.cfi_def_cfa_offset 0
+ 187 0024 7047     		bx	lr
+ 188              	.L9:
+ 189 0026 00BF     		.align	2
+ 190              	.L8:
+ 191 0028 00000000 		.word	TIMER_CYCLE
+ 192 002c 00000000 		.word	counter3
+ 193 0030 00000000 		.word	timer3_flag
+ 194              		.cfi_endproc
+ 195              	.LFE2:
+ 197              		.section	.text.setTimer4,"ax",%progbits
+ 198              		.align	1
+ 199              		.global	setTimer4
+ 200              		.syntax unified
+ 201              		.thumb
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 5
+
+
+ 202              		.thumb_func
+ 203              		.fpu softvfp
+ 205              	setTimer4:
+ 206              	.LFB3:
+  36:./Core/Src/SoftwareTimer.c **** 
+  37:./Core/Src/SoftwareTimer.c **** void setTimer4(int duration){
+ 207              		.loc 1 37 29
+ 208              		.cfi_startproc
+ 209              		@ args = 0, pretend = 0, frame = 8
+ 210              		@ frame_needed = 1, uses_anonymous_args = 0
+ 211              		@ link register save eliminated.
+ 212 0000 80B4     		push	{r7}
+ 213              		.cfi_def_cfa_offset 4
+ 214              		.cfi_offset 7, -4
+ 215 0002 83B0     		sub	sp, sp, #12
+ 216              		.cfi_def_cfa_offset 16
+ 217 0004 00AF     		add	r7, sp, #0
+ 218              		.cfi_def_cfa_register 7
+ 219 0006 7860     		str	r0, [r7, #4]
+  38:./Core/Src/SoftwareTimer.c **** 	counter4=duration/TIMER_CYCLE;
+ 220              		.loc 1 38 19
+ 221 0008 074B     		ldr	r3, .L11
+ 222 000a 1B68     		ldr	r3, [r3]
+ 223 000c 7A68     		ldr	r2, [r7, #4]
+ 224 000e 92FBF3F3 		sdiv	r3, r2, r3
+ 225              		.loc 1 38 10
+ 226 0012 064A     		ldr	r2, .L11+4
+ 227 0014 1360     		str	r3, [r2]
+  39:./Core/Src/SoftwareTimer.c **** 	timer4_flag=0;
+ 228              		.loc 1 39 13
+ 229 0016 064B     		ldr	r3, .L11+8
+ 230 0018 0022     		movs	r2, #0
+ 231 001a 1A60     		str	r2, [r3]
+  40:./Core/Src/SoftwareTimer.c **** }
+ 232              		.loc 1 40 1
+ 233 001c 00BF     		nop
+ 234 001e 0C37     		adds	r7, r7, #12
+ 235              		.cfi_def_cfa_offset 4
+ 236 0020 BD46     		mov	sp, r7
+ 237              		.cfi_def_cfa_register 13
+ 238              		@ sp needed
+ 239 0022 80BC     		pop	{r7}
+ 240              		.cfi_restore 7
+ 241              		.cfi_def_cfa_offset 0
+ 242 0024 7047     		bx	lr
+ 243              	.L12:
+ 244 0026 00BF     		.align	2
+ 245              	.L11:
+ 246 0028 00000000 		.word	TIMER_CYCLE
+ 247 002c 00000000 		.word	counter4
+ 248 0030 00000000 		.word	timer4_flag
+ 249              		.cfi_endproc
+ 250              	.LFE3:
+ 252              		.section	.text.TimerRun,"ax",%progbits
+ 253              		.align	1
+ 254              		.global	TimerRun
+ 255              		.syntax unified
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 6
+
+
+ 256              		.thumb
+ 257              		.thumb_func
+ 258              		.fpu softvfp
+ 260              	TimerRun:
+ 261              	.LFB4:
+  41:./Core/Src/SoftwareTimer.c **** 
+  42:./Core/Src/SoftwareTimer.c **** void TimerRun(){
+ 262              		.loc 1 42 16
+ 263              		.cfi_startproc
+ 264              		@ args = 0, pretend = 0, frame = 0
+ 265              		@ frame_needed = 1, uses_anonymous_args = 0
+ 266              		@ link register save eliminated.
+ 267 0000 80B4     		push	{r7}
+ 268              		.cfi_def_cfa_offset 4
+ 269              		.cfi_offset 7, -4
+ 270 0002 00AF     		add	r7, sp, #0
+ 271              		.cfi_def_cfa_register 7
+  43:./Core/Src/SoftwareTimer.c **** 	if(counter1>0){
+ 272              		.loc 1 43 13
+ 273 0004 214B     		ldr	r3, .L19
+ 274 0006 1B68     		ldr	r3, [r3]
+ 275              		.loc 1 43 4
+ 276 0008 002B     		cmp	r3, #0
+ 277 000a 0BDD     		ble	.L14
+  44:./Core/Src/SoftwareTimer.c **** 		counter1--;
+ 278              		.loc 1 44 11
+ 279 000c 1F4B     		ldr	r3, .L19
+ 280 000e 1B68     		ldr	r3, [r3]
+ 281 0010 013B     		subs	r3, r3, #1
+ 282 0012 1E4A     		ldr	r2, .L19
+ 283 0014 1360     		str	r3, [r2]
+  45:./Core/Src/SoftwareTimer.c **** 		if(counter1<=0){
+ 284              		.loc 1 45 14
+ 285 0016 1D4B     		ldr	r3, .L19
+ 286 0018 1B68     		ldr	r3, [r3]
+ 287              		.loc 1 45 5
+ 288 001a 002B     		cmp	r3, #0
+ 289 001c 02DC     		bgt	.L14
+  46:./Core/Src/SoftwareTimer.c **** 			timer1_flag=1;
+ 290              		.loc 1 46 15
+ 291 001e 1C4B     		ldr	r3, .L19+4
+ 292 0020 0122     		movs	r2, #1
+ 293 0022 1A60     		str	r2, [r3]
+ 294              	.L14:
+  47:./Core/Src/SoftwareTimer.c **** 		}
+  48:./Core/Src/SoftwareTimer.c **** 	}
+  49:./Core/Src/SoftwareTimer.c **** 
+  50:./Core/Src/SoftwareTimer.c **** 	if(counter2>0){
+ 295              		.loc 1 50 13
+ 296 0024 1B4B     		ldr	r3, .L19+8
+ 297 0026 1B68     		ldr	r3, [r3]
+ 298              		.loc 1 50 4
+ 299 0028 002B     		cmp	r3, #0
+ 300 002a 0BDD     		ble	.L15
+  51:./Core/Src/SoftwareTimer.c **** 		counter2--;
+ 301              		.loc 1 51 11
+ 302 002c 194B     		ldr	r3, .L19+8
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 7
+
+
+ 303 002e 1B68     		ldr	r3, [r3]
+ 304 0030 013B     		subs	r3, r3, #1
+ 305 0032 184A     		ldr	r2, .L19+8
+ 306 0034 1360     		str	r3, [r2]
+  52:./Core/Src/SoftwareTimer.c **** 		if(counter2<=0){
+ 307              		.loc 1 52 14
+ 308 0036 174B     		ldr	r3, .L19+8
+ 309 0038 1B68     		ldr	r3, [r3]
+ 310              		.loc 1 52 5
+ 311 003a 002B     		cmp	r3, #0
+ 312 003c 02DC     		bgt	.L15
+  53:./Core/Src/SoftwareTimer.c **** 			timer2_flag=1;
+ 313              		.loc 1 53 15
+ 314 003e 164B     		ldr	r3, .L19+12
+ 315 0040 0122     		movs	r2, #1
+ 316 0042 1A60     		str	r2, [r3]
+ 317              	.L15:
+  54:./Core/Src/SoftwareTimer.c **** 		}
+  55:./Core/Src/SoftwareTimer.c **** 	}
+  56:./Core/Src/SoftwareTimer.c **** 
+  57:./Core/Src/SoftwareTimer.c **** 	if(counter3>0){
+ 318              		.loc 1 57 13
+ 319 0044 154B     		ldr	r3, .L19+16
+ 320 0046 1B68     		ldr	r3, [r3]
+ 321              		.loc 1 57 4
+ 322 0048 002B     		cmp	r3, #0
+ 323 004a 0BDD     		ble	.L16
+  58:./Core/Src/SoftwareTimer.c **** 		counter3--;
+ 324              		.loc 1 58 11
+ 325 004c 134B     		ldr	r3, .L19+16
+ 326 004e 1B68     		ldr	r3, [r3]
+ 327 0050 013B     		subs	r3, r3, #1
+ 328 0052 124A     		ldr	r2, .L19+16
+ 329 0054 1360     		str	r3, [r2]
+  59:./Core/Src/SoftwareTimer.c **** 		if(counter3<=0){
+ 330              		.loc 1 59 14
+ 331 0056 114B     		ldr	r3, .L19+16
+ 332 0058 1B68     		ldr	r3, [r3]
+ 333              		.loc 1 59 5
+ 334 005a 002B     		cmp	r3, #0
+ 335 005c 02DC     		bgt	.L16
+  60:./Core/Src/SoftwareTimer.c **** 			timer3_flag=1;
+ 336              		.loc 1 60 15
+ 337 005e 104B     		ldr	r3, .L19+20
+ 338 0060 0122     		movs	r2, #1
+ 339 0062 1A60     		str	r2, [r3]
+ 340              	.L16:
+  61:./Core/Src/SoftwareTimer.c **** 		}
+  62:./Core/Src/SoftwareTimer.c **** 	}
+  63:./Core/Src/SoftwareTimer.c **** 
+  64:./Core/Src/SoftwareTimer.c **** 	if(counter4>0){
+ 341              		.loc 1 64 13
+ 342 0064 0F4B     		ldr	r3, .L19+24
+ 343 0066 1B68     		ldr	r3, [r3]
+ 344              		.loc 1 64 4
+ 345 0068 002B     		cmp	r3, #0
+ 346 006a 0BDD     		ble	.L18
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 8
+
+
+  65:./Core/Src/SoftwareTimer.c **** 		counter4--;
+ 347              		.loc 1 65 11
+ 348 006c 0D4B     		ldr	r3, .L19+24
+ 349 006e 1B68     		ldr	r3, [r3]
+ 350 0070 013B     		subs	r3, r3, #1
+ 351 0072 0C4A     		ldr	r2, .L19+24
+ 352 0074 1360     		str	r3, [r2]
+  66:./Core/Src/SoftwareTimer.c **** 		if(counter4<=0){
+ 353              		.loc 1 66 14
+ 354 0076 0B4B     		ldr	r3, .L19+24
+ 355 0078 1B68     		ldr	r3, [r3]
+ 356              		.loc 1 66 5
+ 357 007a 002B     		cmp	r3, #0
+ 358 007c 02DC     		bgt	.L18
+  67:./Core/Src/SoftwareTimer.c **** 			timer4_flag=1;
+ 359              		.loc 1 67 15
+ 360 007e 0A4B     		ldr	r3, .L19+28
+ 361 0080 0122     		movs	r2, #1
+ 362 0082 1A60     		str	r2, [r3]
+ 363              	.L18:
+  68:./Core/Src/SoftwareTimer.c **** 		}
+  69:./Core/Src/SoftwareTimer.c **** 	}
+  70:./Core/Src/SoftwareTimer.c **** }
+ 364              		.loc 1 70 1
+ 365 0084 00BF     		nop
+ 366 0086 BD46     		mov	sp, r7
+ 367              		.cfi_def_cfa_register 13
+ 368              		@ sp needed
+ 369 0088 80BC     		pop	{r7}
+ 370              		.cfi_restore 7
+ 371              		.cfi_def_cfa_offset 0
+ 372 008a 7047     		bx	lr
+ 373              	.L20:
+ 374              		.align	2
+ 375              	.L19:
+ 376 008c 00000000 		.word	counter1
+ 377 0090 00000000 		.word	timer1_flag
+ 378 0094 00000000 		.word	counter2
+ 379 0098 00000000 		.word	timer2_flag
+ 380 009c 00000000 		.word	counter3
+ 381 00a0 00000000 		.word	timer3_flag
+ 382 00a4 00000000 		.word	counter4
+ 383 00a8 00000000 		.word	timer4_flag
+ 384              		.cfi_endproc
+ 385              	.LFE4:
+ 387              		.text
+ 388              	.Letext0:
+ 389              		.file 2 "Core/Inc/SoftwareTimer.h"
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 SoftwareTimer.c
+                            *COM*:0000000000000004 counter1
+                            *COM*:0000000000000004 timer1_flag
+                            *COM*:0000000000000004 counter2
+                            *COM*:0000000000000004 timer2_flag
+                            *COM*:0000000000000004 counter3
+                            *COM*:0000000000000004 timer3_flag
+                            *COM*:0000000000000004 counter4
+                            *COM*:0000000000000004 timer4_flag
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:28     .data.TIMER_CYCLE:0000000000000000 TIMER_CYCLE
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:25     .data.TIMER_CYCLE:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:31     .text.setTimer1:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:39     .text.setTimer1:0000000000000000 setTimer1
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:81     .text.setTimer1:0000000000000028 $d
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:88     .text.setTimer2:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:95     .text.setTimer2:0000000000000000 setTimer2
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:136    .text.setTimer2:0000000000000028 $d
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:143    .text.setTimer3:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:150    .text.setTimer3:0000000000000000 setTimer3
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:191    .text.setTimer3:0000000000000028 $d
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:198    .text.setTimer4:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:205    .text.setTimer4:0000000000000000 setTimer4
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:246    .text.setTimer4:0000000000000028 $d
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:253    .text.TimerRun:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:260    .text.TimerRun:0000000000000000 TimerRun
+C:\Users\DELL\AppData\Local\Temp\ccsNhF8P.s:376    .text.TimerRun:000000000000008c $d
+                           .group:0000000000000000 wm4.0.e890922d021f7fff2fbf219cb2b38f03
+
+NO UNDEFINED SYMBOLS

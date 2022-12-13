@@ -1,0 +1,3718 @@
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 6
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"input_processing.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.comm	RED_DURATION,4,4
+  16              		.comm	YELLOW_DURATION,4,4
+  17              		.comm	GREEN_DURATION,4,4
+  18              		.comm	pes_led_period,4,4
+  19              		.comm	pes_led_count,4,4
+  20              		.comm	red_temp_dur,4,4
+  21              		.comm	yellow_temp_dur,4,4
+  22              		.comm	green_temp_dur,4,4
+  23              		.global	state
+  24              		.section	.bss.state,"aw",%nobits
+  27              	state:
+  28 0000 00       		.space	1
+  29              		.comm	current_led_way1,1,1
+  30              		.comm	leds_way1_count,12,4
+  31              		.comm	current_led_way2,1,1
+  32              		.comm	leds_way2_count,12,4
+  33              		.global	button1_executed
+  34              		.section	.bss.button1_executed,"aw",%nobits
+  35              		.align	2
+  38              	button1_executed:
+  39 0000 00000000 		.space	4
+  40              		.global	button2_increase1
+  41              		.section	.bss.button2_increase1,"aw",%nobits
+  42              		.align	2
+  45              	button2_increase1:
+  46 0000 00000000 		.space	4
+  47              		.global	flag_pes
+  48              		.section	.bss.flag_pes,"aw",%nobits
+  49              		.align	2
+  52              	flag_pes:
+  53 0000 00000000 		.space	4
+  54              		.global	button4_executed
+  55              		.section	.bss.button4_executed,"aw",%nobits
+  56              		.align	2
+  59              	button4_executed:
+  60 0000 00000000 		.space	4
+  61              		.global	led_state
+  62              		.section	.bss.led_state,"aw",%nobits
+  63              		.align	2
+  66              	led_state:
+  67 0000 00000000 		.space	4
+  68              		.global	print
+  69              		.section	.bss.print,"aw",%nobits
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 2
+
+
+  70              		.align	2
+  73              	print:
+  74 0000 00000000 		.space	4
+  75              		.comm	LedToChange,1,1
+  76              		.global	MAX_LED
+  77              		.section	.rodata.MAX_LED,"a"
+  78              		.align	2
+  81              	MAX_LED:
+  82 0000 02000000 		.word	2
+  83              		.global	index_7SEGLed
+  84              		.section	.bss.index_7SEGLed,"aw",%nobits
+  85              		.align	2
+  88              	index_7SEGLed:
+  89 0000 00000000 		.space	4
+  90              		.comm	led_buffer1,8,4
+  91              		.comm	led_buffer2,8,4
+  92              		.section	.rodata
+  93              		.align	2
+  94              	.LC0:
+  95 0000 21375345 		.ascii	"!7SEG:%d%d#\015\000"
+  95      473A2564 
+  95      2564230D 
+  95      00
+  96              		.section	.text.fsm_for_input_processing,"ax",%progbits
+  97              		.align	1
+  98              		.global	fsm_for_input_processing
+  99              		.arch armv7-m
+ 100              		.syntax unified
+ 101              		.thumb
+ 102              		.thumb_func
+ 103              		.fpu softvfp
+ 105              	fsm_for_input_processing:
+ 106              	.LFB68:
+ 107              		.file 1 "./Core/Src/input_processing.c"
+   1:./Core/Src/input_processing.c **** #include "main.h"
+   2:./Core/Src/input_processing.c **** #include "button.h"
+   3:./Core/Src/input_processing.c **** #include "input_processing.h"
+   4:./Core/Src/input_processing.c **** #include "SoftwareTimer.h"
+   5:./Core/Src/input_processing.c **** #include "global.h"
+   6:./Core/Src/input_processing.c **** 
+   7:./Core/Src/input_processing.c **** #include <stdio.h>
+   8:./Core/Src/input_processing.c **** #define TRUE 1
+   9:./Core/Src/input_processing.c **** #define FALSE 0
+  10:./Core/Src/input_processing.c **** #define T_7SEGLED 250
+  11:./Core/Src/input_processing.c **** 
+  12:./Core/Src/input_processing.c **** int RED_DURATION;
+  13:./Core/Src/input_processing.c **** int YELLOW_DURATION ;
+  14:./Core/Src/input_processing.c **** int GREEN_DURATION;
+  15:./Core/Src/input_processing.c **** 
+  16:./Core/Src/input_processing.c **** int pes_led_period;
+  17:./Core/Src/input_processing.c **** int pes_led_count;
+  18:./Core/Src/input_processing.c **** 
+  19:./Core/Src/input_processing.c **** int red_temp_dur, yellow_temp_dur, green_temp_dur;
+  20:./Core/Src/input_processing.c **** 
+  21:./Core/Src/input_processing.c **** enum State{INIT ,MODE1, MODE2, MODE3, MODE4, INCREASE, INCREASE_500MS, UPDATE_DURATION} ;
+  22:./Core/Src/input_processing.c **** enum LED{RED,YELLOW,GREEN};
+  23:./Core/Src/input_processing.c **** enum State state = INIT;
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 3
+
+
+  24:./Core/Src/input_processing.c **** 
+  25:./Core/Src/input_processing.c **** /* WAY1 TRAFFIC LIGHT VAR START */
+  26:./Core/Src/input_processing.c **** enum LED current_led_way1;
+  27:./Core/Src/input_processing.c **** int leds_way1_count[3];
+  28:./Core/Src/input_processing.c **** /* WAY1 TRAFFIC LIGHT VAR END */
+  29:./Core/Src/input_processing.c **** 
+  30:./Core/Src/input_processing.c **** /* WAY2 TRAFFIC LIGHT VAR START */
+  31:./Core/Src/input_processing.c **** enum LED current_led_way2;
+  32:./Core/Src/input_processing.c **** int leds_way2_count[3];
+  33:./Core/Src/input_processing.c **** /* WAY2 TRAFFIC LIGHT VAR END */
+  34:./Core/Src/input_processing.c **** 
+  35:./Core/Src/input_processing.c **** int button1_executed=0;
+  36:./Core/Src/input_processing.c **** int button2_increase1=0;
+  37:./Core/Src/input_processing.c **** 
+  38:./Core/Src/input_processing.c **** /* VAR NG DI BO */
+  39:./Core/Src/input_processing.c **** int flag_pes=0;
+  40:./Core/Src/input_processing.c **** int button4_executed=0;
+  41:./Core/Src/input_processing.c **** /* VAR NG DI BO */
+  42:./Core/Src/input_processing.c **** 
+  43:./Core/Src/input_processing.c **** /* var BLINKING */
+  44:./Core/Src/input_processing.c **** int led_state=0;
+  45:./Core/Src/input_processing.c **** /* VAR BLINKING */
+  46:./Core/Src/input_processing.c **** 
+  47:./Core/Src/input_processing.c **** int print=0;
+  48:./Core/Src/input_processing.c **** enum LED LedToChange;
+  49:./Core/Src/input_processing.c **** 
+  50:./Core/Src/input_processing.c **** const int MAX_LED=2;
+  51:./Core/Src/input_processing.c **** int index_7SEGLed=0;
+  52:./Core/Src/input_processing.c **** int led_buffer1[2];
+  53:./Core/Src/input_processing.c **** int led_buffer2[2];
+  54:./Core/Src/input_processing.c **** void update_led_buffer(int val);
+  55:./Core/Src/input_processing.c **** void Switch7SEGLEDIndex();
+  56:./Core/Src/input_processing.c **** void displayMode(int mode);
+  57:./Core/Src/input_processing.c **** void update7SEG(int index);
+  58:./Core/Src/input_processing.c **** void loadLedTempDuration(enum LED color);
+  59:./Core/Src/input_processing.c **** void increaseTempDur(enum LED color);
+  60:./Core/Src/input_processing.c **** void updateDuration(enum LED color);
+  61:./Core/Src/input_processing.c **** void trafficLightCount(int*leds_count,enum LED*current_led);
+  62:./Core/Src/input_processing.c **** void displaySingleLedsMode1();
+  63:./Core/Src/input_processing.c **** void display7SEGMode1();
+  64:./Core/Src/input_processing.c **** void turnOffSingleLed();
+  65:./Core/Src/input_processing.c **** void PES_LED_ON();
+  66:./Core/Src/input_processing.c **** void PES_LED_RED();
+  67:./Core/Src/input_processing.c **** void PES_LED_OFF();
+  68:./Core/Src/input_processing.c **** void ledBlinking(enum LED led_to_change);
+  69:./Core/Src/input_processing.c **** void turnOnGreen1();
+  70:./Core/Src/input_processing.c **** void turnOnRed1();
+  71:./Core/Src/input_processing.c **** void turnOnYellow1();
+  72:./Core/Src/input_processing.c **** void turnOff1();
+  73:./Core/Src/input_processing.c **** void turnOnGreen2();
+  74:./Core/Src/input_processing.c **** void turnOnRed2();
+  75:./Core/Src/input_processing.c **** void turnOnYellow2();
+  76:./Core/Src/input_processing.c **** void turnOff2();
+  77:./Core/Src/input_processing.c **** void ToggleRED();
+  78:./Core/Src/input_processing.c **** void ToggleGREEN();
+  79:./Core/Src/input_processing.c **** void ToggleYELLOW();
+  80:./Core/Src/input_processing.c **** 
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 4
+
+
+  81:./Core/Src/input_processing.c **** 
+  82:./Core/Src/input_processing.c **** void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
+ 108              		.loc 1 82 80
+ 109              		.cfi_startproc
+ 110              		@ args = 0, pretend = 0, frame = 8
+ 111              		@ frame_needed = 1, uses_anonymous_args = 0
+ 112 0000 80B5     		push	{r7, lr}
+ 113              		.cfi_def_cfa_offset 8
+ 114              		.cfi_offset 7, -8
+ 115              		.cfi_offset 14, -4
+ 116 0002 82B0     		sub	sp, sp, #8
+ 117              		.cfi_def_cfa_offset 16
+ 118 0004 00AF     		add	r7, sp, #0
+ 119              		.cfi_def_cfa_register 7
+ 120 0006 7860     		str	r0, [r7, #4]
+ 121 0008 3960     		str	r1, [r7]
+  83:./Core/Src/input_processing.c **** 	switch(state){
+ 122              		.loc 1 83 2
+ 123 000a 964B     		ldr	r3, .L82
+ 124 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 125 000e 072B     		cmp	r3, #7
+ 126 0010 00F28284 		bhi	.L75
+ 127 0014 01A2     		adr	r2, .L4
+ 128 0016 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 129 001a 00BF     		.p2align 2
+ 130              	.L4:
+ 131 001c 3D000000 		.word	.L11+1
+ 132 0020 D7000000 		.word	.L10+1
+ 133 0024 F7020000 		.word	.L9+1
+ 134 0028 0F040000 		.word	.L8+1
+ 135 002c 6D050000 		.word	.L7+1
+ 136 0030 8B060000 		.word	.L6+1
+ 137 0034 71070000 		.word	.L5+1
+ 138 0038 C9080000 		.word	.L3+1
+ 139              		.p2align 1
+ 140              	.L11:
+  84:./Core/Src/input_processing.c **** 	case INIT:
+  85:./Core/Src/input_processing.c **** 		print=0;
+ 141              		.loc 1 85 8
+ 142 003c 8A4B     		ldr	r3, .L82+4
+ 143 003e 0022     		movs	r2, #0
+ 144 0040 1A60     		str	r2, [r3]
+  86:./Core/Src/input_processing.c **** 		/* INIT PORT OUTPUT START */
+  87:./Core/Src/input_processing.c **** 		turnOffSingleLed();
+ 145              		.loc 1 87 3
+ 146 0042 FFF7FEFF 		bl	turnOffSingleLed
+  88:./Core/Src/input_processing.c **** 		/* INIT PORT OUTPUT END */
+  89:./Core/Src/input_processing.c **** 
+  90:./Core/Src/input_processing.c **** 		/* INITIALIZE TEMPORARY DURATION START */
+  91:./Core/Src/input_processing.c **** 		red_temp_dur=RED_DURATION;
+ 147              		.loc 1 91 15
+ 148 0046 894B     		ldr	r3, .L82+8
+ 149 0048 1B68     		ldr	r3, [r3]
+ 150 004a 894A     		ldr	r2, .L82+12
+ 151 004c 1360     		str	r3, [r2]
+  92:./Core/Src/input_processing.c **** 		yellow_temp_dur=YELLOW_DURATION;
+ 152              		.loc 1 92 18
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 5
+
+
+ 153 004e 894B     		ldr	r3, .L82+16
+ 154 0050 1B68     		ldr	r3, [r3]
+ 155 0052 894A     		ldr	r2, .L82+20
+ 156 0054 1360     		str	r3, [r2]
+  93:./Core/Src/input_processing.c **** 		green_temp_dur=GREEN_DURATION;
+ 157              		.loc 1 93 17
+ 158 0056 894B     		ldr	r3, .L82+24
+ 159 0058 1B68     		ldr	r3, [r3]
+ 160 005a 894A     		ldr	r2, .L82+28
+ 161 005c 1360     		str	r3, [r2]
+  94:./Core/Src/input_processing.c **** 		/* INITIALIZE TEMPORARY DURATION END */
+  95:./Core/Src/input_processing.c **** 
+  96:./Core/Src/input_processing.c **** 		/* INITIALIZE COUNT START */
+  97:./Core/Src/input_processing.c **** 		leds_way1_count[0]=RED_DURATION;
+ 162              		.loc 1 97 21
+ 163 005e 834B     		ldr	r3, .L82+8
+ 164 0060 1B68     		ldr	r3, [r3]
+ 165 0062 884A     		ldr	r2, .L82+32
+ 166 0064 1360     		str	r3, [r2]
+  98:./Core/Src/input_processing.c **** 		leds_way1_count[1]=GREEN_DURATION;
+ 167              		.loc 1 98 21
+ 168 0066 854B     		ldr	r3, .L82+24
+ 169 0068 1B68     		ldr	r3, [r3]
+ 170 006a 864A     		ldr	r2, .L82+32
+ 171 006c 5360     		str	r3, [r2, #4]
+  99:./Core/Src/input_processing.c **** 		leds_way1_count[2]=YELLOW_DURATION;
+ 172              		.loc 1 99 21
+ 173 006e 814B     		ldr	r3, .L82+16
+ 174 0070 1B68     		ldr	r3, [r3]
+ 175 0072 844A     		ldr	r2, .L82+32
+ 176 0074 9360     		str	r3, [r2, #8]
+ 100:./Core/Src/input_processing.c **** 		turnOnRed1();
+ 177              		.loc 1 100 3
+ 178 0076 FFF7FEFF 		bl	turnOnRed1
+ 101:./Core/Src/input_processing.c **** 		current_led_way1=RED;
+ 179              		.loc 1 101 19
+ 180 007a 834B     		ldr	r3, .L82+36
+ 181 007c 0022     		movs	r2, #0
+ 182 007e 1A70     		strb	r2, [r3]
+ 102:./Core/Src/input_processing.c **** 		leds_way2_count[0]=RED_DURATION;
+ 183              		.loc 1 102 21
+ 184 0080 7A4B     		ldr	r3, .L82+8
+ 185 0082 1B68     		ldr	r3, [r3]
+ 186 0084 814A     		ldr	r2, .L82+40
+ 187 0086 1360     		str	r3, [r2]
+ 103:./Core/Src/input_processing.c **** 		leds_way2_count[1]=GREEN_DURATION;
+ 188              		.loc 1 103 21
+ 189 0088 7C4B     		ldr	r3, .L82+24
+ 190 008a 1B68     		ldr	r3, [r3]
+ 191 008c 7F4A     		ldr	r2, .L82+40
+ 192 008e 5360     		str	r3, [r2, #4]
+ 104:./Core/Src/input_processing.c **** 		leds_way2_count[2]=YELLOW_DURATION;
+ 193              		.loc 1 104 21
+ 194 0090 784B     		ldr	r3, .L82+16
+ 195 0092 1B68     		ldr	r3, [r3]
+ 196 0094 7D4A     		ldr	r2, .L82+40
+ 197 0096 9360     		str	r3, [r2, #8]
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 6
+
+
+ 105:./Core/Src/input_processing.c **** 		turnOnGreen2();
+ 198              		.loc 1 105 3
+ 199 0098 FFF7FEFF 		bl	turnOnGreen2
+ 106:./Core/Src/input_processing.c **** 		current_led_way2=GREEN;
+ 200              		.loc 1 106 19
+ 201 009c 7C4B     		ldr	r3, .L82+44
+ 202 009e 0222     		movs	r2, #2
+ 203 00a0 1A70     		strb	r2, [r3]
+ 107:./Core/Src/input_processing.c **** 		PES_LED_OFF();
+ 204              		.loc 1 107 3
+ 205 00a2 FFF7FEFF 		bl	PES_LED_OFF
+ 108:./Core/Src/input_processing.c **** 		/* INITIALIZE COUNT END */
+ 109:./Core/Src/input_processing.c **** 
+ 110:./Core/Src/input_processing.c **** 		state=MODE1;
+ 206              		.loc 1 110 8
+ 207 00a6 6F4B     		ldr	r3, .L82
+ 208 00a8 0122     		movs	r2, #1
+ 209 00aa 1A70     		strb	r2, [r3]
+ 111:./Core/Src/input_processing.c **** 		setTimer4(1000);  //SET TIMER4 FOR COUNT DOWN
+ 210              		.loc 1 111 3
+ 211 00ac 4FF47A70 		mov	r0, #1000
+ 212 00b0 FFF7FEFF 		bl	setTimer4
+ 112:./Core/Src/input_processing.c **** 
+ 113:./Core/Src/input_processing.c **** 		/* PES_LED SETUP START */
+ 114:./Core/Src/input_processing.c **** 		pes_led_period=(RED_DURATION+YELLOW_DURATION+GREEN_DURATION)*2;
+ 213              		.loc 1 114 31
+ 214 00b4 6D4B     		ldr	r3, .L82+8
+ 215 00b6 1A68     		ldr	r2, [r3]
+ 216 00b8 6E4B     		ldr	r3, .L82+16
+ 217 00ba 1B68     		ldr	r3, [r3]
+ 218 00bc 1A44     		add	r2, r2, r3
+ 219              		.loc 1 114 47
+ 220 00be 6F4B     		ldr	r3, .L82+24
+ 221 00c0 1B68     		ldr	r3, [r3]
+ 222 00c2 1344     		add	r3, r3, r2
+ 223              		.loc 1 114 63
+ 224 00c4 5B00     		lsls	r3, r3, #1
+ 225              		.loc 1 114 17
+ 226 00c6 734A     		ldr	r2, .L82+48
+ 227 00c8 1360     		str	r3, [r2]
+ 115:./Core/Src/input_processing.c **** 		pes_led_count=pes_led_period;
+ 228              		.loc 1 115 16
+ 229 00ca 724B     		ldr	r3, .L82+48
+ 230 00cc 1B68     		ldr	r3, [r3]
+ 231 00ce 724A     		ldr	r2, .L82+52
+ 232 00d0 1360     		str	r3, [r2]
+ 116:./Core/Src/input_processing.c **** 		/* PES_LED_SETUP END */
+ 117:./Core/Src/input_processing.c **** 		break;
+ 233              		.loc 1 117 3
+ 234 00d2 00F021BC 		b	.L2
+ 235              	.L10:
+ 118:./Core/Src/input_processing.c **** 	case MODE1:
+ 119:./Core/Src/input_processing.c **** 		/* COUNT DOWN START */
+ 120:./Core/Src/input_processing.c **** 		if(timer4_flag==1){
+ 236              		.loc 1 120 17
+ 237 00d6 714B     		ldr	r3, .L82+56
+ 238 00d8 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 7
+
+
+ 239              		.loc 1 120 5
+ 240 00da 012B     		cmp	r3, #1
+ 241 00dc 21D1     		bne	.L12
+ 121:./Core/Src/input_processing.c **** 			setTimer4(1000);
+ 242              		.loc 1 121 4
+ 243 00de 4FF47A70 		mov	r0, #1000
+ 244 00e2 FFF7FEFF 		bl	setTimer4
+ 122:./Core/Src/input_processing.c **** 			pes_led_count--;
+ 245              		.loc 1 122 17
+ 246 00e6 6C4B     		ldr	r3, .L82+52
+ 247 00e8 1B68     		ldr	r3, [r3]
+ 248 00ea 013B     		subs	r3, r3, #1
+ 249 00ec 6A4A     		ldr	r2, .L82+52
+ 250 00ee 1360     		str	r3, [r2]
+ 123:./Core/Src/input_processing.c **** 			trafficLightCount(leds_way1_count,&current_led_way1);
+ 251              		.loc 1 123 4
+ 252 00f0 6549     		ldr	r1, .L82+36
+ 253 00f2 6448     		ldr	r0, .L82+32
+ 254 00f4 FFF7FEFF 		bl	trafficLightCount
+ 124:./Core/Src/input_processing.c **** 			trafficLightCount(leds_way2_count,&current_led_way2);
+ 255              		.loc 1 124 4
+ 256 00f8 6549     		ldr	r1, .L82+44
+ 257 00fa 6448     		ldr	r0, .L82+40
+ 258 00fc FFF7FEFF 		bl	trafficLightCount
+ 125:./Core/Src/input_processing.c **** 			displaySingleLedsMode1();
+ 259              		.loc 1 125 4
+ 260 0100 FFF7FEFF 		bl	displaySingleLedsMode1
+ 126:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 127:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 261              		.loc 1 127 4
+ 262 0104 664B     		ldr	r3, .L82+60
+ 263 0106 1A68     		ldr	r2, [r3]
+ 264 0108 654B     		ldr	r3, .L82+60
+ 265 010a 5B68     		ldr	r3, [r3, #4]
+ 266 010c 6549     		ldr	r1, .L82+64
+ 267 010e 6648     		ldr	r0, .L82+68
+ 268 0110 FFF7FEFF 		bl	sprintf
+ 269 0114 0346     		mov	r3, r0
+ 126:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 270              		.loc 1 126 4
+ 271 0116 9AB2     		uxth	r2, r3
+ 272 0118 6423     		movs	r3, #100
+ 273 011a 6349     		ldr	r1, .L82+68
+ 274 011c 7868     		ldr	r0, [r7, #4]
+ 275 011e FFF7FEFF 		bl	HAL_UART_Transmit
+ 276              	.L12:
+ 128:./Core/Src/input_processing.c **** 		}
+ 129:./Core/Src/input_processing.c **** 		/* COUNT DOWN END */
+ 130:./Core/Src/input_processing.c **** 
+ 131:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 132:./Core/Src/input_processing.c **** 		if(current_led_way1==RED){
+ 277              		.loc 1 132 22
+ 278 0122 594B     		ldr	r3, .L82+36
+ 279 0124 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 280              		.loc 1 132 5
+ 281 0126 002B     		cmp	r3, #0
+ 282 0128 05D1     		bne	.L13
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 8
+
+
+ 133:./Core/Src/input_processing.c **** 			update_led_buffer(leds_way1_count[0]);
+ 283              		.loc 1 133 4
+ 284 012a 564B     		ldr	r3, .L82+32
+ 285 012c 1B68     		ldr	r3, [r3]
+ 286 012e 1846     		mov	r0, r3
+ 287 0130 FFF7FEFF 		bl	update_led_buffer
+ 288 0134 12E0     		b	.L14
+ 289              	.L13:
+ 134:./Core/Src/input_processing.c **** 		}else if(current_led_way1==GREEN){
+ 290              		.loc 1 134 28
+ 291 0136 544B     		ldr	r3, .L82+36
+ 292 0138 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 293              		.loc 1 134 11
+ 294 013a 022B     		cmp	r3, #2
+ 295 013c 05D1     		bne	.L15
+ 135:./Core/Src/input_processing.c **** 			update_led_buffer(leds_way1_count[1]);
+ 296              		.loc 1 135 4
+ 297 013e 514B     		ldr	r3, .L82+32
+ 298 0140 5B68     		ldr	r3, [r3, #4]
+ 299 0142 1846     		mov	r0, r3
+ 300 0144 FFF7FEFF 		bl	update_led_buffer
+ 301 0148 08E0     		b	.L14
+ 302              	.L15:
+ 136:./Core/Src/input_processing.c **** 		}else if(current_led_way1==YELLOW){
+ 303              		.loc 1 136 28
+ 304 014a 4F4B     		ldr	r3, .L82+36
+ 305 014c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 306              		.loc 1 136 11
+ 307 014e 012B     		cmp	r3, #1
+ 308 0150 04D1     		bne	.L14
+ 137:./Core/Src/input_processing.c **** 			update_led_buffer(leds_way1_count[2]);
+ 309              		.loc 1 137 4
+ 310 0152 4C4B     		ldr	r3, .L82+32
+ 311 0154 9B68     		ldr	r3, [r3, #8]
+ 312 0156 1846     		mov	r0, r3
+ 313 0158 FFF7FEFF 		bl	update_led_buffer
+ 314              	.L14:
+ 138:./Core/Src/input_processing.c **** 		}
+ 139:./Core/Src/input_processing.c **** 
+ 140:./Core/Src/input_processing.c **** 		HAL_UART_Transmit(huart, traffic_light_num,
+ 141:./Core/Src/input_processing.c **** 		sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 315              		.loc 1 141 3
+ 316 015c 504B     		ldr	r3, .L82+60
+ 317 015e 1A68     		ldr	r2, [r3]
+ 318 0160 4F4B     		ldr	r3, .L82+60
+ 319 0162 5B68     		ldr	r3, [r3, #4]
+ 320 0164 4F49     		ldr	r1, .L82+64
+ 321 0166 5048     		ldr	r0, .L82+68
+ 322 0168 FFF7FEFF 		bl	sprintf
+ 323 016c 0346     		mov	r3, r0
+ 140:./Core/Src/input_processing.c **** 		sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 324              		.loc 1 140 3
+ 325 016e 9AB2     		uxth	r2, r3
+ 326 0170 6423     		movs	r3, #100
+ 327 0172 4D49     		ldr	r1, .L82+68
+ 328 0174 7868     		ldr	r0, [r7, #4]
+ 329 0176 FFF7FEFF 		bl	HAL_UART_Transmit
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 9
+
+
+ 142:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 143:./Core/Src/input_processing.c **** 
+ 144:./Core/Src/input_processing.c **** 
+ 145:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 START */
+ 146:./Core/Src/input_processing.c **** 		if(button1_executed==0){
+ 330              		.loc 1 146 22
+ 331 017a 4C4B     		ldr	r3, .L82+72
+ 332 017c 1B68     		ldr	r3, [r3]
+ 333              		.loc 1 146 5
+ 334 017e 002B     		cmp	r3, #0
+ 335 0180 24D1     		bne	.L16
+ 147:./Core/Src/input_processing.c **** 			if(button1_pressed()==TRUE){
+ 336              		.loc 1 147 7
+ 337 0182 FFF7FEFF 		bl	button1_pressed
+ 338 0186 0346     		mov	r3, r0
+ 339              		.loc 1 147 6
+ 340 0188 012B     		cmp	r3, #1
+ 341 018a 2BD1     		bne	.L17
+ 148:./Core/Src/input_processing.c **** 				print=0;
+ 342              		.loc 1 148 10
+ 343 018c 364B     		ldr	r3, .L82+4
+ 344 018e 0022     		movs	r2, #0
+ 345 0190 1A60     		str	r2, [r3]
+ 149:./Core/Src/input_processing.c **** 				state=MODE2;
+ 346              		.loc 1 149 10
+ 347 0192 344B     		ldr	r3, .L82
+ 348 0194 0222     		movs	r2, #2
+ 349 0196 1A70     		strb	r2, [r3]
+ 150:./Core/Src/input_processing.c **** 				button1_executed=1;
+ 350              		.loc 1 150 21
+ 351 0198 444B     		ldr	r3, .L82+72
+ 352 019a 0122     		movs	r2, #1
+ 353 019c 1A60     		str	r2, [r3]
+ 151:./Core/Src/input_processing.c **** 				setTimer1(250);   //set timer for red led blinking
+ 354              		.loc 1 151 5
+ 355 019e FA20     		movs	r0, #250
+ 356 01a0 FFF7FEFF 		bl	setTimer1
+ 152:./Core/Src/input_processing.c **** 				/* INITIALIZE TEMP DURATION START */
+ 153:./Core/Src/input_processing.c **** 				red_temp_dur=RED_DURATION;
+ 357              		.loc 1 153 17
+ 358 01a4 314B     		ldr	r3, .L82+8
+ 359 01a6 1B68     		ldr	r3, [r3]
+ 360 01a8 314A     		ldr	r2, .L82+12
+ 361 01aa 1360     		str	r3, [r2]
+ 154:./Core/Src/input_processing.c **** 				yellow_temp_dur=YELLOW_DURATION;
+ 362              		.loc 1 154 20
+ 363 01ac 314B     		ldr	r3, .L82+16
+ 364 01ae 1B68     		ldr	r3, [r3]
+ 365 01b0 314A     		ldr	r2, .L82+20
+ 366 01b2 1360     		str	r3, [r2]
+ 155:./Core/Src/input_processing.c **** 				green_temp_dur=GREEN_DURATION;
+ 367              		.loc 1 155 19
+ 368 01b4 314B     		ldr	r3, .L82+24
+ 369 01b6 1B68     		ldr	r3, [r3]
+ 370 01b8 314A     		ldr	r2, .L82+28
+ 371 01ba 1360     		str	r3, [r2]
+ 156:./Core/Src/input_processing.c **** 				/* INITIALIZE TEMP DURATION END */
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 10
+
+
+ 157:./Core/Src/input_processing.c **** 				turnOffSingleLed();
+ 372              		.loc 1 157 5
+ 373 01bc FFF7FEFF 		bl	turnOffSingleLed
+ 158:./Core/Src/input_processing.c **** 				PES_LED_OFF();
+ 374              		.loc 1 158 5
+ 375 01c0 FFF7FEFF 		bl	PES_LED_OFF
+ 159:./Core/Src/input_processing.c **** 				flag_pes=0;
+ 376              		.loc 1 159 13
+ 377 01c4 3A4B     		ldr	r3, .L82+76
+ 378 01c6 0022     		movs	r2, #0
+ 379 01c8 1A60     		str	r2, [r3]
+ 380 01ca 0BE0     		b	.L17
+ 381              	.L16:
+ 160:./Core/Src/input_processing.c **** 			}
+ 161:./Core/Src/input_processing.c **** 		}else if(button1_executed==1){
+ 382              		.loc 1 161 28
+ 383 01cc 374B     		ldr	r3, .L82+72
+ 384 01ce 1B68     		ldr	r3, [r3]
+ 385              		.loc 1 161 11
+ 386 01d0 012B     		cmp	r3, #1
+ 387 01d2 07D1     		bne	.L17
+ 162:./Core/Src/input_processing.c **** 			if(button1_pressed()==FALSE){
+ 388              		.loc 1 162 7
+ 389 01d4 FFF7FEFF 		bl	button1_pressed
+ 390 01d8 0346     		mov	r3, r0
+ 391              		.loc 1 162 6
+ 392 01da 002B     		cmp	r3, #0
+ 393 01dc 02D1     		bne	.L17
+ 163:./Core/Src/input_processing.c **** 				button1_executed=0;
+ 394              		.loc 1 163 21
+ 395 01de 334B     		ldr	r3, .L82+72
+ 396 01e0 0022     		movs	r2, #0
+ 397 01e2 1A60     		str	r2, [r3]
+ 398              	.L17:
+ 164:./Core/Src/input_processing.c **** 			}
+ 165:./Core/Src/input_processing.c **** 		}
+ 166:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 END */
+ 167:./Core/Src/input_processing.c **** 
+ 168:./Core/Src/input_processing.c **** 		/* PES LED EXCUTION START */
+ 169:./Core/Src/input_processing.c **** 		if(button4_pressed()==1){
+ 399              		.loc 1 169 6
+ 400 01e4 FFF7FEFF 		bl	button4_pressed
+ 401 01e8 0346     		mov	r3, r0
+ 402              		.loc 1 169 5
+ 403 01ea 012B     		cmp	r3, #1
+ 404 01ec 11D1     		bne	.L18
+ 170:./Core/Src/input_processing.c **** 			if(button4_executed==0){
+ 405              		.loc 1 170 23
+ 406 01ee 314B     		ldr	r3, .L82+80
+ 407 01f0 1B68     		ldr	r3, [r3]
+ 408              		.loc 1 170 6
+ 409 01f2 002B     		cmp	r3, #0
+ 410 01f4 15D1     		bne	.L19
+ 171:./Core/Src/input_processing.c **** 				flag_pes=1;
+ 411              		.loc 1 171 13
+ 412 01f6 2E4B     		ldr	r3, .L82+76
+ 413 01f8 0122     		movs	r2, #1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 11
+
+
+ 414 01fa 1A60     		str	r2, [r3]
+ 172:./Core/Src/input_processing.c **** 				button4_executed=1;
+ 415              		.loc 1 172 21
+ 416 01fc 2D4B     		ldr	r3, .L82+80
+ 417 01fe 0122     		movs	r2, #1
+ 418 0200 1A60     		str	r2, [r3]
+ 173:./Core/Src/input_processing.c **** 				timer2_flag = 1;
+ 419              		.loc 1 173 17
+ 420 0202 2D4B     		ldr	r3, .L82+84
+ 421 0204 0122     		movs	r2, #1
+ 422 0206 1A60     		str	r2, [r3]
+ 174:./Core/Src/input_processing.c **** 				pes_led_count=pes_led_period;
+ 423              		.loc 1 174 18
+ 424 0208 224B     		ldr	r3, .L82+48
+ 425 020a 1B68     		ldr	r3, [r3]
+ 426 020c 224A     		ldr	r2, .L82+52
+ 427 020e 1360     		str	r3, [r2]
+ 428 0210 07E0     		b	.L19
+ 429              	.L18:
+ 175:./Core/Src/input_processing.c **** 			}
+ 176:./Core/Src/input_processing.c **** 		}else if(button4_pressed()==0){
+ 430              		.loc 1 176 12
+ 431 0212 FFF7FEFF 		bl	button4_pressed
+ 432 0216 0346     		mov	r3, r0
+ 433              		.loc 1 176 11
+ 434 0218 002B     		cmp	r3, #0
+ 435 021a 02D1     		bne	.L19
+ 177:./Core/Src/input_processing.c **** 			button4_executed=0;
+ 436              		.loc 1 177 20
+ 437 021c 254B     		ldr	r3, .L82+80
+ 438 021e 0022     		movs	r2, #0
+ 439 0220 1A60     		str	r2, [r3]
+ 440              	.L19:
+ 178:./Core/Src/input_processing.c **** 		}
+ 179:./Core/Src/input_processing.c **** 
+ 180:./Core/Src/input_processing.c **** 		if(flag_pes==1){
+ 441              		.loc 1 180 14
+ 442 0222 234B     		ldr	r3, .L82+76
+ 443 0224 1B68     		ldr	r3, [r3]
+ 444              		.loc 1 180 5
+ 445 0226 012B     		cmp	r3, #1
+ 446 0228 40F07183 		bne	.L76
+ 181:./Core/Src/input_processing.c **** 			if(current_led_way1==RED){
+ 447              		.loc 1 181 23
+ 448 022c 164B     		ldr	r3, .L82+36
+ 449 022e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 450              		.loc 1 181 6
+ 451 0230 002B     		cmp	r3, #0
+ 452 0232 45D1     		bne	.L21
+ 182:./Core/Src/input_processing.c **** 				PES_LED_ON();
+ 453              		.loc 1 182 5
+ 454 0234 FFF7FEFF 		bl	PES_LED_ON
+ 183:./Core/Src/input_processing.c **** 				if (leds_way1_count[0] <= 3){
+ 455              		.loc 1 183 24
+ 456 0238 124B     		ldr	r3, .L82+32
+ 457 023a 1B68     		ldr	r3, [r3]
+ 458              		.loc 1 183 8
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 12
+
+
+ 459 023c 032B     		cmp	r3, #3
+ 460 023e 47DC     		bgt	.L22
+ 184:./Core/Src/input_processing.c **** 					if (timer2_flag == 1){
+ 461              		.loc 1 184 22
+ 462 0240 1D4B     		ldr	r3, .L82+84
+ 463 0242 1B68     		ldr	r3, [r3]
+ 464              		.loc 1 184 9
+ 465 0244 012B     		cmp	r3, #1
+ 466 0246 43D1     		bne	.L22
+ 185:./Core/Src/input_processing.c **** 						pwm = pwm +250;
+ 467              		.loc 1 185 17
+ 468 0248 1C4B     		ldr	r3, .L82+88
+ 469 024a 1B68     		ldr	r3, [r3]
+ 470 024c FA33     		adds	r3, r3, #250
+ 471              		.loc 1 185 11
+ 472 024e 1B4A     		ldr	r2, .L82+88
+ 473 0250 1360     		str	r3, [r2]
+ 186:./Core/Src/input_processing.c **** 						__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, pwm);
+ 474              		.loc 1 186 7
+ 475 0252 1A4B     		ldr	r3, .L82+88
+ 476 0254 1A68     		ldr	r2, [r3]
+ 477 0256 3B68     		ldr	r3, [r7]
+ 478 0258 1B68     		ldr	r3, [r3]
+ 479 025a 5A63     		str	r2, [r3, #52]
+ 187:./Core/Src/input_processing.c **** 						setTimer2(30);
+ 480              		.loc 1 187 7
+ 481 025c 1E20     		movs	r0, #30
+ 482 025e FFF7FEFF 		bl	setTimer2
+ 483 0262 35E0     		b	.L22
+ 484              	.L83:
+ 485              		.align	2
+ 486              	.L82:
+ 487 0264 00000000 		.word	state
+ 488 0268 00000000 		.word	print
+ 489 026c 00000000 		.word	RED_DURATION
+ 490 0270 00000000 		.word	red_temp_dur
+ 491 0274 00000000 		.word	YELLOW_DURATION
+ 492 0278 00000000 		.word	yellow_temp_dur
+ 493 027c 00000000 		.word	GREEN_DURATION
+ 494 0280 00000000 		.word	green_temp_dur
+ 495 0284 00000000 		.word	leds_way1_count
+ 496 0288 00000000 		.word	current_led_way1
+ 497 028c 00000000 		.word	leds_way2_count
+ 498 0290 00000000 		.word	current_led_way2
+ 499 0294 00000000 		.word	pes_led_period
+ 500 0298 00000000 		.word	pes_led_count
+ 501 029c 00000000 		.word	timer4_flag
+ 502 02a0 00000000 		.word	led_buffer1
+ 503 02a4 00000000 		.word	.LC0
+ 504 02a8 00000000 		.word	traffic_light_num
+ 505 02ac 00000000 		.word	button1_executed
+ 506 02b0 00000000 		.word	flag_pes
+ 507 02b4 00000000 		.word	button4_executed
+ 508 02b8 00000000 		.word	timer2_flag
+ 509 02bc 00000000 		.word	pwm
+ 510              	.L21:
+ 188:./Core/Src/input_processing.c **** 					}
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 13
+
+
+ 189:./Core/Src/input_processing.c **** 				}
+ 190:./Core/Src/input_processing.c **** 			}else{
+ 191:./Core/Src/input_processing.c **** 				PES_LED_RED();
+ 511              		.loc 1 191 5
+ 512 02c0 FFF7FEFF 		bl	PES_LED_RED
+ 192:./Core/Src/input_processing.c **** 				timer2_flag = 1;
+ 513              		.loc 1 192 17
+ 514 02c4 984B     		ldr	r3, .L84
+ 515 02c6 0122     		movs	r2, #1
+ 516 02c8 1A60     		str	r2, [r3]
+ 193:./Core/Src/input_processing.c **** 				pwm = 0;
+ 517              		.loc 1 193 9
+ 518 02ca 984B     		ldr	r3, .L84+4
+ 519 02cc 0022     		movs	r2, #0
+ 520 02ce 1A60     		str	r2, [r3]
+ 521              	.L22:
+ 194:./Core/Src/input_processing.c **** 			}
+ 195:./Core/Src/input_processing.c **** 			if(pes_led_count<=0 && current_led_way1!=RED){
+ 522              		.loc 1 195 20
+ 523 02d0 974B     		ldr	r3, .L84+8
+ 524 02d2 1B68     		ldr	r3, [r3]
+ 525              		.loc 1 195 6
+ 526 02d4 002B     		cmp	r3, #0
+ 527 02d6 00F31A83 		bgt	.L76
+ 528              		.loc 1 195 43 discriminator 1
+ 529 02da 964B     		ldr	r3, .L84+12
+ 530 02dc 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 531              		.loc 1 195 24 discriminator 1
+ 532 02de 002B     		cmp	r3, #0
+ 533 02e0 00F01583 		beq	.L76
+ 196:./Core/Src/input_processing.c **** 				PES_LED_OFF();
+ 534              		.loc 1 196 5
+ 535 02e4 FFF7FEFF 		bl	PES_LED_OFF
+ 197:./Core/Src/input_processing.c **** 				pwm = 0;
+ 536              		.loc 1 197 9
+ 537 02e8 904B     		ldr	r3, .L84+4
+ 538 02ea 0022     		movs	r2, #0
+ 539 02ec 1A60     		str	r2, [r3]
+ 198:./Core/Src/input_processing.c **** 				flag_pes=0;
+ 540              		.loc 1 198 13
+ 541 02ee 924B     		ldr	r3, .L84+16
+ 542 02f0 0022     		movs	r2, #0
+ 543 02f2 1A60     		str	r2, [r3]
+ 199:./Core/Src/input_processing.c **** 			}
+ 200:./Core/Src/input_processing.c **** 		}
+ 201:./Core/Src/input_processing.c **** 		/* PES LED EXCUTION END */
+ 202:./Core/Src/input_processing.c **** 		break;
+ 544              		.loc 1 202 3
+ 545 02f4 0BE3     		b	.L76
+ 546              	.L9:
+ 203:./Core/Src/input_processing.c **** 	case MODE2:
+ 204:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 205:./Core/Src/input_processing.c **** 		update_led_buffer(red_temp_dur);
+ 547              		.loc 1 205 3
+ 548 02f6 914B     		ldr	r3, .L84+20
+ 549 02f8 1B68     		ldr	r3, [r3]
+ 550 02fa 1846     		mov	r0, r3
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 14
+
+
+ 551 02fc FFF7FEFF 		bl	update_led_buffer
+ 206:./Core/Src/input_processing.c **** 		if(print==0){
+ 552              		.loc 1 206 11
+ 553 0300 8F4B     		ldr	r3, .L84+24
+ 554 0302 1B68     		ldr	r3, [r3]
+ 555              		.loc 1 206 5
+ 556 0304 002B     		cmp	r3, #0
+ 557 0306 11D1     		bne	.L23
+ 207:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 208:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 558              		.loc 1 208 4
+ 559 0308 8E4B     		ldr	r3, .L84+28
+ 560 030a 1A68     		ldr	r2, [r3]
+ 561 030c 8D4B     		ldr	r3, .L84+28
+ 562 030e 5B68     		ldr	r3, [r3, #4]
+ 563 0310 8D49     		ldr	r1, .L84+32
+ 564 0312 8E48     		ldr	r0, .L84+36
+ 565 0314 FFF7FEFF 		bl	sprintf
+ 566 0318 0346     		mov	r3, r0
+ 207:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 567              		.loc 1 207 4
+ 568 031a 9AB2     		uxth	r2, r3
+ 569 031c 6423     		movs	r3, #100
+ 570 031e 8B49     		ldr	r1, .L84+36
+ 571 0320 7868     		ldr	r0, [r7, #4]
+ 572 0322 FFF7FEFF 		bl	HAL_UART_Transmit
+ 209:./Core/Src/input_processing.c **** 			print=1;
+ 573              		.loc 1 209 9
+ 574 0326 864B     		ldr	r3, .L84+24
+ 575 0328 0122     		movs	r2, #1
+ 576 032a 1A60     		str	r2, [r3]
+ 577              	.L23:
+ 210:./Core/Src/input_processing.c **** 		}
+ 211:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 212:./Core/Src/input_processing.c **** 
+ 213:./Core/Src/input_processing.c **** 		/* BLINK SINGLE RED LED START */
+ 214:./Core/Src/input_processing.c **** 		if(timer1_flag==1){
+ 578              		.loc 1 214 17
+ 579 032c 884B     		ldr	r3, .L84+40
+ 580 032e 1B68     		ldr	r3, [r3]
+ 581              		.loc 1 214 5
+ 582 0330 012B     		cmp	r3, #1
+ 583 0332 19D1     		bne	.L24
+ 215:./Core/Src/input_processing.c **** 			setTimer1(250);
+ 584              		.loc 1 215 4
+ 585 0334 FA20     		movs	r0, #250
+ 586 0336 FFF7FEFF 		bl	setTimer1
+ 216:./Core/Src/input_processing.c **** 			if(led_state==0){
+ 587              		.loc 1 216 16
+ 588 033a 864B     		ldr	r3, .L84+44
+ 589 033c 1B68     		ldr	r3, [r3]
+ 590              		.loc 1 216 6
+ 591 033e 002B     		cmp	r3, #0
+ 592 0340 07D1     		bne	.L25
+ 217:./Core/Src/input_processing.c **** 				turnOnRed1();
+ 593              		.loc 1 217 5
+ 594 0342 FFF7FEFF 		bl	turnOnRed1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 15
+
+
+ 218:./Core/Src/input_processing.c **** 				turnOnRed2();
+ 595              		.loc 1 218 5
+ 596 0346 FFF7FEFF 		bl	turnOnRed2
+ 219:./Core/Src/input_processing.c **** 				led_state=1;
+ 597              		.loc 1 219 14
+ 598 034a 824B     		ldr	r3, .L84+44
+ 599 034c 0122     		movs	r2, #1
+ 600 034e 1A60     		str	r2, [r3]
+ 601 0350 0AE0     		b	.L24
+ 602              	.L25:
+ 220:./Core/Src/input_processing.c **** 			}else if(led_state==1){
+ 603              		.loc 1 220 22
+ 604 0352 804B     		ldr	r3, .L84+44
+ 605 0354 1B68     		ldr	r3, [r3]
+ 606              		.loc 1 220 12
+ 607 0356 012B     		cmp	r3, #1
+ 608 0358 06D1     		bne	.L24
+ 221:./Core/Src/input_processing.c **** 				turnOff1();
+ 609              		.loc 1 221 5
+ 610 035a FFF7FEFF 		bl	turnOff1
+ 222:./Core/Src/input_processing.c **** 				turnOff2();
+ 611              		.loc 1 222 5
+ 612 035e FFF7FEFF 		bl	turnOff2
+ 223:./Core/Src/input_processing.c **** 				led_state=0;
+ 613              		.loc 1 223 14
+ 614 0362 7C4B     		ldr	r3, .L84+44
+ 615 0364 0022     		movs	r2, #0
+ 616 0366 1A60     		str	r2, [r3]
+ 617              	.L24:
+ 224:./Core/Src/input_processing.c **** 			}
+ 225:./Core/Src/input_processing.c **** 		}
+ 226:./Core/Src/input_processing.c **** 		/* BLINK SINGLE RED LED END */
+ 227:./Core/Src/input_processing.c **** 
+ 228:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 START */
+ 229:./Core/Src/input_processing.c **** 		if(button1_executed==0){
+ 618              		.loc 1 229 22
+ 619 0368 7B4B     		ldr	r3, .L84+48
+ 620 036a 1B68     		ldr	r3, [r3]
+ 621              		.loc 1 229 5
+ 622 036c 002B     		cmp	r3, #0
+ 623 036e 10D1     		bne	.L26
+ 230:./Core/Src/input_processing.c **** 			if(button1_pressed()==TRUE){
+ 624              		.loc 1 230 7
+ 625 0370 FFF7FEFF 		bl	button1_pressed
+ 626 0374 0346     		mov	r3, r0
+ 627              		.loc 1 230 6
+ 628 0376 012B     		cmp	r3, #1
+ 629 0378 17D1     		bne	.L27
+ 231:./Core/Src/input_processing.c **** 				state=MODE3;
+ 630              		.loc 1 231 10
+ 631 037a 784B     		ldr	r3, .L84+52
+ 632 037c 0322     		movs	r2, #3
+ 633 037e 1A70     		strb	r2, [r3]
+ 232:./Core/Src/input_processing.c **** 				button1_executed=1;
+ 634              		.loc 1 232 21
+ 635 0380 754B     		ldr	r3, .L84+48
+ 636 0382 0122     		movs	r2, #1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 16
+
+
+ 637 0384 1A60     		str	r2, [r3]
+ 233:./Core/Src/input_processing.c **** 				turnOffSingleLed();
+ 638              		.loc 1 233 5
+ 639 0386 FFF7FEFF 		bl	turnOffSingleLed
+ 234:./Core/Src/input_processing.c **** 				print=0;
+ 640              		.loc 1 234 10
+ 641 038a 6D4B     		ldr	r3, .L84+24
+ 642 038c 0022     		movs	r2, #0
+ 643 038e 1A60     		str	r2, [r3]
+ 644 0390 0BE0     		b	.L27
+ 645              	.L26:
+ 235:./Core/Src/input_processing.c **** 			}
+ 236:./Core/Src/input_processing.c **** 		}else if(button1_executed==1){
+ 646              		.loc 1 236 28
+ 647 0392 714B     		ldr	r3, .L84+48
+ 648 0394 1B68     		ldr	r3, [r3]
+ 649              		.loc 1 236 11
+ 650 0396 012B     		cmp	r3, #1
+ 651 0398 07D1     		bne	.L27
+ 237:./Core/Src/input_processing.c **** 			if(button1_pressed()==FALSE){
+ 652              		.loc 1 237 7
+ 653 039a FFF7FEFF 		bl	button1_pressed
+ 654 039e 0346     		mov	r3, r0
+ 655              		.loc 1 237 6
+ 656 03a0 002B     		cmp	r3, #0
+ 657 03a2 02D1     		bne	.L27
+ 238:./Core/Src/input_processing.c **** 				button1_executed=0;
+ 658              		.loc 1 238 21
+ 659 03a4 6C4B     		ldr	r3, .L84+48
+ 660 03a6 0022     		movs	r2, #0
+ 661 03a8 1A60     		str	r2, [r3]
+ 662              	.L27:
+ 239:./Core/Src/input_processing.c **** 			}
+ 240:./Core/Src/input_processing.c **** 		}
+ 241:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 END */
+ 242:./Core/Src/input_processing.c **** 
+ 243:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON3 START */
+ 244:./Core/Src/input_processing.c **** 		if(button3_pressed()==TRUE){
+ 663              		.loc 1 244 6
+ 664 03aa FFF7FEFF 		bl	button3_pressed
+ 665 03ae 0346     		mov	r3, r0
+ 666              		.loc 1 244 5
+ 667 03b0 012B     		cmp	r3, #1
+ 668 03b2 05D1     		bne	.L28
+ 245:./Core/Src/input_processing.c **** 			state=UPDATE_DURATION;
+ 669              		.loc 1 245 9
+ 670 03b4 694B     		ldr	r3, .L84+52
+ 671 03b6 0722     		movs	r2, #7
+ 672 03b8 1A70     		strb	r2, [r3]
+ 246:./Core/Src/input_processing.c **** 			LedToChange=RED;
+ 673              		.loc 1 246 15
+ 674 03ba 694B     		ldr	r3, .L84+56
+ 675 03bc 0022     		movs	r2, #0
+ 676 03be 1A70     		strb	r2, [r3]
+ 677              	.L28:
+ 247:./Core/Src/input_processing.c **** 		}
+ 248:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON3 END */
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 17
+
+
+ 249:./Core/Src/input_processing.c **** 
+ 250:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON2 START */
+ 251:./Core/Src/input_processing.c **** 		if(button2_pressed()==TRUE){
+ 678              		.loc 1 251 6
+ 679 03c0 FFF7FEFF 		bl	button2_pressed
+ 680 03c4 0346     		mov	r3, r0
+ 681              		.loc 1 251 5
+ 682 03c6 012B     		cmp	r3, #1
+ 683 03c8 08D1     		bne	.L29
+ 252:./Core/Src/input_processing.c **** 			state=INCREASE;
+ 684              		.loc 1 252 9
+ 685 03ca 644B     		ldr	r3, .L84+52
+ 686 03cc 0522     		movs	r2, #5
+ 687 03ce 1A70     		strb	r2, [r3]
+ 253:./Core/Src/input_processing.c **** 			LedToChange=RED;
+ 688              		.loc 1 253 15
+ 689 03d0 634B     		ldr	r3, .L84+56
+ 690 03d2 0022     		movs	r2, #0
+ 691 03d4 1A70     		strb	r2, [r3]
+ 254:./Core/Src/input_processing.c **** 			button2_increase1=0;
+ 692              		.loc 1 254 21
+ 693 03d6 634B     		ldr	r3, .L84+60
+ 694 03d8 0022     		movs	r2, #0
+ 695 03da 1A60     		str	r2, [r3]
+ 696              	.L29:
+ 255:./Core/Src/input_processing.c **** 		}
+ 256:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON2 END */
+ 257:./Core/Src/input_processing.c **** 		//TO DO
+ 258:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 259:./Core/Src/input_processing.c **** 		if(LedToChange==RED){
+ 697              		.loc 1 259 17
+ 698 03dc 604B     		ldr	r3, .L84+56
+ 699 03de 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 700              		.loc 1 259 5
+ 701 03e0 002B     		cmp	r3, #0
+ 702 03e2 04D1     		bne	.L30
+ 260:./Core/Src/input_processing.c **** 			update_led_buffer(red_temp_dur);
+ 703              		.loc 1 260 4
+ 704 03e4 554B     		ldr	r3, .L84+20
+ 705 03e6 1B68     		ldr	r3, [r3]
+ 706 03e8 1846     		mov	r0, r3
+ 707 03ea FFF7FEFF 		bl	update_led_buffer
+ 708              	.L30:
+ 261:./Core/Src/input_processing.c **** 		}
+ 262:./Core/Src/input_processing.c **** 		HAL_UART_Transmit(huart, traffic_light_num,
+ 263:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 709              		.loc 1 263 5
+ 710 03ee 554B     		ldr	r3, .L84+28
+ 711 03f0 1A68     		ldr	r2, [r3]
+ 712 03f2 544B     		ldr	r3, .L84+28
+ 713 03f4 5B68     		ldr	r3, [r3, #4]
+ 714 03f6 5449     		ldr	r1, .L84+32
+ 715 03f8 5448     		ldr	r0, .L84+36
+ 716 03fa FFF7FEFF 		bl	sprintf
+ 717 03fe 0346     		mov	r3, r0
+ 262:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 718              		.loc 1 262 3
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 18
+
+
+ 719 0400 9AB2     		uxth	r2, r3
+ 720 0402 6423     		movs	r3, #100
+ 721 0404 5149     		ldr	r1, .L84+36
+ 722 0406 7868     		ldr	r0, [r7, #4]
+ 723 0408 FFF7FEFF 		bl	HAL_UART_Transmit
+ 264:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 265:./Core/Src/input_processing.c **** 
+ 266:./Core/Src/input_processing.c **** 		break;
+ 724              		.loc 1 266 3
+ 725 040c 84E2     		b	.L2
+ 726              	.L8:
+ 267:./Core/Src/input_processing.c **** 	case MODE3:
+ 268:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 269:./Core/Src/input_processing.c **** 		update_led_buffer(green_temp_dur);
+ 727              		.loc 1 269 3
+ 728 040e 564B     		ldr	r3, .L84+64
+ 729 0410 1B68     		ldr	r3, [r3]
+ 730 0412 1846     		mov	r0, r3
+ 731 0414 FFF7FEFF 		bl	update_led_buffer
+ 270:./Core/Src/input_processing.c **** 		if(print==0){
+ 732              		.loc 1 270 11
+ 733 0418 494B     		ldr	r3, .L84+24
+ 734 041a 1B68     		ldr	r3, [r3]
+ 735              		.loc 1 270 5
+ 736 041c 002B     		cmp	r3, #0
+ 737 041e 11D1     		bne	.L31
+ 271:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 272:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 738              		.loc 1 272 4
+ 739 0420 484B     		ldr	r3, .L84+28
+ 740 0422 1A68     		ldr	r2, [r3]
+ 741 0424 474B     		ldr	r3, .L84+28
+ 742 0426 5B68     		ldr	r3, [r3, #4]
+ 743 0428 4749     		ldr	r1, .L84+32
+ 744 042a 4848     		ldr	r0, .L84+36
+ 745 042c FFF7FEFF 		bl	sprintf
+ 746 0430 0346     		mov	r3, r0
+ 271:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 747              		.loc 1 271 4
+ 748 0432 9AB2     		uxth	r2, r3
+ 749 0434 6423     		movs	r3, #100
+ 750 0436 4549     		ldr	r1, .L84+36
+ 751 0438 7868     		ldr	r0, [r7, #4]
+ 752 043a FFF7FEFF 		bl	HAL_UART_Transmit
+ 273:./Core/Src/input_processing.c **** 			print=1;
+ 753              		.loc 1 273 9
+ 754 043e 404B     		ldr	r3, .L84+24
+ 755 0440 0122     		movs	r2, #1
+ 756 0442 1A60     		str	r2, [r3]
+ 757              	.L31:
+ 274:./Core/Src/input_processing.c **** 		}
+ 275:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 276:./Core/Src/input_processing.c **** 		/* BLINK SINGLE GREEN LED START */
+ 277:./Core/Src/input_processing.c **** 		if(timer1_flag==1){
+ 758              		.loc 1 277 17
+ 759 0444 424B     		ldr	r3, .L84+40
+ 760 0446 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 19
+
+
+ 761              		.loc 1 277 5
+ 762 0448 012B     		cmp	r3, #1
+ 763 044a 19D1     		bne	.L32
+ 278:./Core/Src/input_processing.c **** 			setTimer1(250);
+ 764              		.loc 1 278 4
+ 765 044c FA20     		movs	r0, #250
+ 766 044e FFF7FEFF 		bl	setTimer1
+ 279:./Core/Src/input_processing.c **** 			if(led_state==0){
+ 767              		.loc 1 279 16
+ 768 0452 404B     		ldr	r3, .L84+44
+ 769 0454 1B68     		ldr	r3, [r3]
+ 770              		.loc 1 279 6
+ 771 0456 002B     		cmp	r3, #0
+ 772 0458 07D1     		bne	.L33
+ 280:./Core/Src/input_processing.c **** 				turnOnGreen1();
+ 773              		.loc 1 280 5
+ 774 045a FFF7FEFF 		bl	turnOnGreen1
+ 281:./Core/Src/input_processing.c **** 				turnOnGreen2();
+ 775              		.loc 1 281 5
+ 776 045e FFF7FEFF 		bl	turnOnGreen2
+ 282:./Core/Src/input_processing.c **** 				led_state=1;
+ 777              		.loc 1 282 14
+ 778 0462 3C4B     		ldr	r3, .L84+44
+ 779 0464 0122     		movs	r2, #1
+ 780 0466 1A60     		str	r2, [r3]
+ 781 0468 0AE0     		b	.L32
+ 782              	.L33:
+ 283:./Core/Src/input_processing.c **** 			}else if(led_state==1){
+ 783              		.loc 1 283 22
+ 784 046a 3A4B     		ldr	r3, .L84+44
+ 785 046c 1B68     		ldr	r3, [r3]
+ 786              		.loc 1 283 12
+ 787 046e 012B     		cmp	r3, #1
+ 788 0470 06D1     		bne	.L32
+ 284:./Core/Src/input_processing.c **** 				turnOff1();
+ 789              		.loc 1 284 5
+ 790 0472 FFF7FEFF 		bl	turnOff1
+ 285:./Core/Src/input_processing.c **** 				turnOff2();
+ 791              		.loc 1 285 5
+ 792 0476 FFF7FEFF 		bl	turnOff2
+ 286:./Core/Src/input_processing.c **** 				led_state=0;
+ 793              		.loc 1 286 14
+ 794 047a 364B     		ldr	r3, .L84+44
+ 795 047c 0022     		movs	r2, #0
+ 796 047e 1A60     		str	r2, [r3]
+ 797              	.L32:
+ 287:./Core/Src/input_processing.c **** 			}
+ 288:./Core/Src/input_processing.c **** 		}
+ 289:./Core/Src/input_processing.c **** 		/* BLINK SINGLE GREEN LED END */
+ 290:./Core/Src/input_processing.c **** 
+ 291:./Core/Src/input_processing.c **** 
+ 292:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 START */
+ 293:./Core/Src/input_processing.c **** 		if(button1_executed==0){
+ 798              		.loc 1 293 22
+ 799 0480 354B     		ldr	r3, .L84+48
+ 800 0482 1B68     		ldr	r3, [r3]
+ 801              		.loc 1 293 5
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 20
+
+
+ 802 0484 002B     		cmp	r3, #0
+ 803 0486 10D1     		bne	.L34
+ 294:./Core/Src/input_processing.c **** 			if(button1_pressed()==TRUE){
+ 804              		.loc 1 294 7
+ 805 0488 FFF7FEFF 		bl	button1_pressed
+ 806 048c 0346     		mov	r3, r0
+ 807              		.loc 1 294 6
+ 808 048e 012B     		cmp	r3, #1
+ 809 0490 17D1     		bne	.L35
+ 295:./Core/Src/input_processing.c **** 				state=MODE4;
+ 810              		.loc 1 295 10
+ 811 0492 324B     		ldr	r3, .L84+52
+ 812 0494 0422     		movs	r2, #4
+ 813 0496 1A70     		strb	r2, [r3]
+ 296:./Core/Src/input_processing.c **** 				button1_executed=1;
+ 814              		.loc 1 296 21
+ 815 0498 2F4B     		ldr	r3, .L84+48
+ 816 049a 0122     		movs	r2, #1
+ 817 049c 1A60     		str	r2, [r3]
+ 297:./Core/Src/input_processing.c **** 				turnOffSingleLed();
+ 818              		.loc 1 297 5
+ 819 049e FFF7FEFF 		bl	turnOffSingleLed
+ 298:./Core/Src/input_processing.c **** 				print=0;
+ 820              		.loc 1 298 10
+ 821 04a2 274B     		ldr	r3, .L84+24
+ 822 04a4 0022     		movs	r2, #0
+ 823 04a6 1A60     		str	r2, [r3]
+ 824 04a8 0BE0     		b	.L35
+ 825              	.L34:
+ 299:./Core/Src/input_processing.c **** 			}
+ 300:./Core/Src/input_processing.c **** 		}else if(button1_executed==1){
+ 826              		.loc 1 300 28
+ 827 04aa 2B4B     		ldr	r3, .L84+48
+ 828 04ac 1B68     		ldr	r3, [r3]
+ 829              		.loc 1 300 11
+ 830 04ae 012B     		cmp	r3, #1
+ 831 04b0 07D1     		bne	.L35
+ 301:./Core/Src/input_processing.c **** 			if(button1_pressed()==FALSE){
+ 832              		.loc 1 301 7
+ 833 04b2 FFF7FEFF 		bl	button1_pressed
+ 834 04b6 0346     		mov	r3, r0
+ 835              		.loc 1 301 6
+ 836 04b8 002B     		cmp	r3, #0
+ 837 04ba 02D1     		bne	.L35
+ 302:./Core/Src/input_processing.c **** 				button1_executed=0;
+ 838              		.loc 1 302 21
+ 839 04bc 264B     		ldr	r3, .L84+48
+ 840 04be 0022     		movs	r2, #0
+ 841 04c0 1A60     		str	r2, [r3]
+ 842              	.L35:
+ 303:./Core/Src/input_processing.c **** 			}
+ 304:./Core/Src/input_processing.c **** 		}
+ 305:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 END */
+ 306:./Core/Src/input_processing.c **** 
+ 307:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON3 START */
+ 308:./Core/Src/input_processing.c **** 		if(button3_pressed()==TRUE){
+ 843              		.loc 1 308 6
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 21
+
+
+ 844 04c2 FFF7FEFF 		bl	button3_pressed
+ 845 04c6 0346     		mov	r3, r0
+ 846              		.loc 1 308 5
+ 847 04c8 012B     		cmp	r3, #1
+ 848 04ca 05D1     		bne	.L36
+ 309:./Core/Src/input_processing.c **** 			state=UPDATE_DURATION;
+ 849              		.loc 1 309 9
+ 850 04cc 234B     		ldr	r3, .L84+52
+ 851 04ce 0722     		movs	r2, #7
+ 852 04d0 1A70     		strb	r2, [r3]
+ 310:./Core/Src/input_processing.c **** 			LedToChange=GREEN;
+ 853              		.loc 1 310 15
+ 854 04d2 234B     		ldr	r3, .L84+56
+ 855 04d4 0222     		movs	r2, #2
+ 856 04d6 1A70     		strb	r2, [r3]
+ 857              	.L36:
+ 311:./Core/Src/input_processing.c **** 		}
+ 312:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON3 END */
+ 313:./Core/Src/input_processing.c **** 
+ 314:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON2 START */
+ 315:./Core/Src/input_processing.c **** 		if(button2_pressed()==TRUE){
+ 858              		.loc 1 315 6
+ 859 04d8 FFF7FEFF 		bl	button2_pressed
+ 860 04dc 0346     		mov	r3, r0
+ 861              		.loc 1 315 5
+ 862 04de 012B     		cmp	r3, #1
+ 863 04e0 08D1     		bne	.L37
+ 316:./Core/Src/input_processing.c **** 			state=INCREASE;
+ 864              		.loc 1 316 9
+ 865 04e2 1E4B     		ldr	r3, .L84+52
+ 866 04e4 0522     		movs	r2, #5
+ 867 04e6 1A70     		strb	r2, [r3]
+ 317:./Core/Src/input_processing.c **** 			LedToChange=GREEN;
+ 868              		.loc 1 317 15
+ 869 04e8 1D4B     		ldr	r3, .L84+56
+ 870 04ea 0222     		movs	r2, #2
+ 871 04ec 1A70     		strb	r2, [r3]
+ 318:./Core/Src/input_processing.c **** 			button2_increase1=0;
+ 872              		.loc 1 318 21
+ 873 04ee 1D4B     		ldr	r3, .L84+60
+ 874 04f0 0022     		movs	r2, #0
+ 875 04f2 1A60     		str	r2, [r3]
+ 876              	.L37:
+ 319:./Core/Src/input_processing.c **** 		}
+ 320:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON2 END */
+ 321:./Core/Src/input_processing.c **** 		//TO DO
+ 322:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 323:./Core/Src/input_processing.c **** 		if(LedToChange==GREEN){
+ 877              		.loc 1 323 17
+ 878 04f4 1A4B     		ldr	r3, .L84+56
+ 879 04f6 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 880              		.loc 1 323 5
+ 881 04f8 022B     		cmp	r3, #2
+ 882 04fa 04D1     		bne	.L38
+ 324:./Core/Src/input_processing.c **** 			update_led_buffer(green_temp_dur);
+ 883              		.loc 1 324 4
+ 884 04fc 1A4B     		ldr	r3, .L84+64
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 22
+
+
+ 885 04fe 1B68     		ldr	r3, [r3]
+ 886 0500 1846     		mov	r0, r3
+ 887 0502 FFF7FEFF 		bl	update_led_buffer
+ 888              	.L38:
+ 325:./Core/Src/input_processing.c **** 		}
+ 326:./Core/Src/input_processing.c **** 		HAL_UART_Transmit(huart, traffic_light_num,
+ 327:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 889              		.loc 1 327 5
+ 890 0506 0F4B     		ldr	r3, .L84+28
+ 891 0508 1A68     		ldr	r2, [r3]
+ 892 050a 0E4B     		ldr	r3, .L84+28
+ 893 050c 5B68     		ldr	r3, [r3, #4]
+ 894 050e 0E49     		ldr	r1, .L84+32
+ 895 0510 0E48     		ldr	r0, .L84+36
+ 896 0512 FFF7FEFF 		bl	sprintf
+ 897 0516 0346     		mov	r3, r0
+ 326:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 898              		.loc 1 326 3
+ 899 0518 9AB2     		uxth	r2, r3
+ 900 051a 6423     		movs	r3, #100
+ 901 051c 0B49     		ldr	r1, .L84+36
+ 902 051e 7868     		ldr	r0, [r7, #4]
+ 903 0520 FFF7FEFF 		bl	HAL_UART_Transmit
+ 328:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 329:./Core/Src/input_processing.c **** 		break;
+ 904              		.loc 1 329 3
+ 905 0524 F8E1     		b	.L2
+ 906              	.L85:
+ 907 0526 00BF     		.align	2
+ 908              	.L84:
+ 909 0528 00000000 		.word	timer2_flag
+ 910 052c 00000000 		.word	pwm
+ 911 0530 00000000 		.word	pes_led_count
+ 912 0534 00000000 		.word	current_led_way1
+ 913 0538 00000000 		.word	flag_pes
+ 914 053c 00000000 		.word	red_temp_dur
+ 915 0540 00000000 		.word	print
+ 916 0544 00000000 		.word	led_buffer1
+ 917 0548 00000000 		.word	.LC0
+ 918 054c 00000000 		.word	traffic_light_num
+ 919 0550 00000000 		.word	timer1_flag
+ 920 0554 00000000 		.word	led_state
+ 921 0558 00000000 		.word	button1_executed
+ 922 055c 00000000 		.word	state
+ 923 0560 00000000 		.word	LedToChange
+ 924 0564 00000000 		.word	button2_increase1
+ 925 0568 00000000 		.word	green_temp_dur
+ 926              	.L7:
+ 330:./Core/Src/input_processing.c **** 	case MODE4:
+ 331:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 332:./Core/Src/input_processing.c **** 		update_led_buffer(yellow_temp_dur);
+ 927              		.loc 1 332 3
+ 928 056c A74B     		ldr	r3, .L86
+ 929 056e 1B68     		ldr	r3, [r3]
+ 930 0570 1846     		mov	r0, r3
+ 931 0572 FFF7FEFF 		bl	update_led_buffer
+ 333:./Core/Src/input_processing.c **** 		if(print==0){
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 23
+
+
+ 932              		.loc 1 333 11
+ 933 0576 A64B     		ldr	r3, .L86+4
+ 934 0578 1B68     		ldr	r3, [r3]
+ 935              		.loc 1 333 5
+ 936 057a 002B     		cmp	r3, #0
+ 937 057c 11D1     		bne	.L39
+ 334:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 335:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 938              		.loc 1 335 4
+ 939 057e A54B     		ldr	r3, .L86+8
+ 940 0580 1A68     		ldr	r2, [r3]
+ 941 0582 A44B     		ldr	r3, .L86+8
+ 942 0584 5B68     		ldr	r3, [r3, #4]
+ 943 0586 A449     		ldr	r1, .L86+12
+ 944 0588 A448     		ldr	r0, .L86+16
+ 945 058a FFF7FEFF 		bl	sprintf
+ 946 058e 0346     		mov	r3, r0
+ 334:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 947              		.loc 1 334 4
+ 948 0590 9AB2     		uxth	r2, r3
+ 949 0592 6423     		movs	r3, #100
+ 950 0594 A149     		ldr	r1, .L86+16
+ 951 0596 7868     		ldr	r0, [r7, #4]
+ 952 0598 FFF7FEFF 		bl	HAL_UART_Transmit
+ 336:./Core/Src/input_processing.c **** 			print=1;
+ 953              		.loc 1 336 9
+ 954 059c 9C4B     		ldr	r3, .L86+4
+ 955 059e 0122     		movs	r2, #1
+ 956 05a0 1A60     		str	r2, [r3]
+ 957              	.L39:
+ 337:./Core/Src/input_processing.c **** 		}
+ 338:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 339:./Core/Src/input_processing.c **** 		/* BLINK SINGLE YELLOW LED START */
+ 340:./Core/Src/input_processing.c **** 		if(timer1_flag==1){
+ 958              		.loc 1 340 17
+ 959 05a2 9F4B     		ldr	r3, .L86+20
+ 960 05a4 1B68     		ldr	r3, [r3]
+ 961              		.loc 1 340 5
+ 962 05a6 012B     		cmp	r3, #1
+ 963 05a8 19D1     		bne	.L40
+ 341:./Core/Src/input_processing.c **** 			setTimer1(250);
+ 964              		.loc 1 341 4
+ 965 05aa FA20     		movs	r0, #250
+ 966 05ac FFF7FEFF 		bl	setTimer1
+ 342:./Core/Src/input_processing.c **** 			if(led_state==0){
+ 967              		.loc 1 342 16
+ 968 05b0 9C4B     		ldr	r3, .L86+24
+ 969 05b2 1B68     		ldr	r3, [r3]
+ 970              		.loc 1 342 6
+ 971 05b4 002B     		cmp	r3, #0
+ 972 05b6 07D1     		bne	.L41
+ 343:./Core/Src/input_processing.c **** 				turnOnYellow1();
+ 973              		.loc 1 343 5
+ 974 05b8 FFF7FEFF 		bl	turnOnYellow1
+ 344:./Core/Src/input_processing.c **** 				turnOnYellow2();
+ 975              		.loc 1 344 5
+ 976 05bc FFF7FEFF 		bl	turnOnYellow2
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 24
+
+
+ 345:./Core/Src/input_processing.c **** 				led_state=1;
+ 977              		.loc 1 345 14
+ 978 05c0 984B     		ldr	r3, .L86+24
+ 979 05c2 0122     		movs	r2, #1
+ 980 05c4 1A60     		str	r2, [r3]
+ 981 05c6 0AE0     		b	.L40
+ 982              	.L41:
+ 346:./Core/Src/input_processing.c **** 			}else if(led_state==1){
+ 983              		.loc 1 346 22
+ 984 05c8 964B     		ldr	r3, .L86+24
+ 985 05ca 1B68     		ldr	r3, [r3]
+ 986              		.loc 1 346 12
+ 987 05cc 012B     		cmp	r3, #1
+ 988 05ce 06D1     		bne	.L40
+ 347:./Core/Src/input_processing.c **** 				turnOff1();
+ 989              		.loc 1 347 5
+ 990 05d0 FFF7FEFF 		bl	turnOff1
+ 348:./Core/Src/input_processing.c **** 				turnOff2();
+ 991              		.loc 1 348 5
+ 992 05d4 FFF7FEFF 		bl	turnOff2
+ 349:./Core/Src/input_processing.c **** 				led_state=0;
+ 993              		.loc 1 349 14
+ 994 05d8 924B     		ldr	r3, .L86+24
+ 995 05da 0022     		movs	r2, #0
+ 996 05dc 1A60     		str	r2, [r3]
+ 997              	.L40:
+ 350:./Core/Src/input_processing.c **** 			}
+ 351:./Core/Src/input_processing.c **** 		}
+ 352:./Core/Src/input_processing.c **** 		/* BLINK SINGLE GREEN LED END */
+ 353:./Core/Src/input_processing.c **** 
+ 354:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 START */
+ 355:./Core/Src/input_processing.c **** 		if(button1_executed==0){
+ 998              		.loc 1 355 22
+ 999 05de 924B     		ldr	r3, .L86+28
+ 1000 05e0 1B68     		ldr	r3, [r3]
+ 1001              		.loc 1 355 5
+ 1002 05e2 002B     		cmp	r3, #0
+ 1003 05e4 13D1     		bne	.L42
+ 356:./Core/Src/input_processing.c **** 			if(button1_pressed()==TRUE){
+ 1004              		.loc 1 356 7
+ 1005 05e6 FFF7FEFF 		bl	button1_pressed
+ 1006 05ea 0346     		mov	r3, r0
+ 1007              		.loc 1 356 6
+ 1008 05ec 012B     		cmp	r3, #1
+ 1009 05ee 1AD1     		bne	.L43
+ 357:./Core/Src/input_processing.c **** 				state=INIT;
+ 1010              		.loc 1 357 10
+ 1011 05f0 8E4B     		ldr	r3, .L86+32
+ 1012 05f2 0022     		movs	r2, #0
+ 1013 05f4 1A70     		strb	r2, [r3]
+ 358:./Core/Src/input_processing.c **** 				button1_executed=1;
+ 1014              		.loc 1 358 21
+ 1015 05f6 8C4B     		ldr	r3, .L86+28
+ 1016 05f8 0122     		movs	r2, #1
+ 1017 05fa 1A60     		str	r2, [r3]
+ 359:./Core/Src/input_processing.c **** 				setTimer1(0); //turn off or reset timer 1
+ 1018              		.loc 1 359 5
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 25
+
+
+ 1019 05fc 0020     		movs	r0, #0
+ 1020 05fe FFF7FEFF 		bl	setTimer1
+ 360:./Core/Src/input_processing.c **** 				turnOffSingleLed();
+ 1021              		.loc 1 360 5
+ 1022 0602 FFF7FEFF 		bl	turnOffSingleLed
+ 361:./Core/Src/input_processing.c **** 				print=0;
+ 1023              		.loc 1 361 10
+ 1024 0606 824B     		ldr	r3, .L86+4
+ 1025 0608 0022     		movs	r2, #0
+ 1026 060a 1A60     		str	r2, [r3]
+ 1027 060c 0BE0     		b	.L43
+ 1028              	.L42:
+ 362:./Core/Src/input_processing.c **** 			}
+ 363:./Core/Src/input_processing.c **** 		}else if(button1_executed==1){
+ 1029              		.loc 1 363 28
+ 1030 060e 864B     		ldr	r3, .L86+28
+ 1031 0610 1B68     		ldr	r3, [r3]
+ 1032              		.loc 1 363 11
+ 1033 0612 012B     		cmp	r3, #1
+ 1034 0614 07D1     		bne	.L43
+ 364:./Core/Src/input_processing.c **** 			if(button1_pressed()==FALSE){
+ 1035              		.loc 1 364 7
+ 1036 0616 FFF7FEFF 		bl	button1_pressed
+ 1037 061a 0346     		mov	r3, r0
+ 1038              		.loc 1 364 6
+ 1039 061c 002B     		cmp	r3, #0
+ 1040 061e 02D1     		bne	.L43
+ 365:./Core/Src/input_processing.c **** 				button1_executed=0;
+ 1041              		.loc 1 365 21
+ 1042 0620 814B     		ldr	r3, .L86+28
+ 1043 0622 0022     		movs	r2, #0
+ 1044 0624 1A60     		str	r2, [r3]
+ 1045              	.L43:
+ 366:./Core/Src/input_processing.c **** 			}
+ 367:./Core/Src/input_processing.c **** 		}
+ 368:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON1 END */
+ 369:./Core/Src/input_processing.c **** 
+ 370:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON3 START */
+ 371:./Core/Src/input_processing.c **** 		if(button3_pressed()==TRUE){
+ 1046              		.loc 1 371 6
+ 1047 0626 FFF7FEFF 		bl	button3_pressed
+ 1048 062a 0346     		mov	r3, r0
+ 1049              		.loc 1 371 5
+ 1050 062c 012B     		cmp	r3, #1
+ 1051 062e 05D1     		bne	.L44
+ 372:./Core/Src/input_processing.c **** 			state=UPDATE_DURATION;
+ 1052              		.loc 1 372 9
+ 1053 0630 7E4B     		ldr	r3, .L86+32
+ 1054 0632 0722     		movs	r2, #7
+ 1055 0634 1A70     		strb	r2, [r3]
+ 373:./Core/Src/input_processing.c **** 			LedToChange=YELLOW;
+ 1056              		.loc 1 373 15
+ 1057 0636 7E4B     		ldr	r3, .L86+36
+ 1058 0638 0122     		movs	r2, #1
+ 1059 063a 1A70     		strb	r2, [r3]
+ 1060              	.L44:
+ 374:./Core/Src/input_processing.c **** 		}
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 26
+
+
+ 375:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON3 END */
+ 376:./Core/Src/input_processing.c **** 
+ 377:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON2 START */
+ 378:./Core/Src/input_processing.c **** 		if(button2_pressed()==TRUE){
+ 1061              		.loc 1 378 6
+ 1062 063c FFF7FEFF 		bl	button2_pressed
+ 1063 0640 0346     		mov	r3, r0
+ 1064              		.loc 1 378 5
+ 1065 0642 012B     		cmp	r3, #1
+ 1066 0644 08D1     		bne	.L45
+ 379:./Core/Src/input_processing.c **** 			state=INCREASE;
+ 1067              		.loc 1 379 9
+ 1068 0646 794B     		ldr	r3, .L86+32
+ 1069 0648 0522     		movs	r2, #5
+ 1070 064a 1A70     		strb	r2, [r3]
+ 380:./Core/Src/input_processing.c **** 			LedToChange=YELLOW;
+ 1071              		.loc 1 380 15
+ 1072 064c 784B     		ldr	r3, .L86+36
+ 1073 064e 0122     		movs	r2, #1
+ 1074 0650 1A70     		strb	r2, [r3]
+ 381:./Core/Src/input_processing.c **** 			button2_increase1=0;
+ 1075              		.loc 1 381 21
+ 1076 0652 784B     		ldr	r3, .L86+40
+ 1077 0654 0022     		movs	r2, #0
+ 1078 0656 1A60     		str	r2, [r3]
+ 1079              	.L45:
+ 382:./Core/Src/input_processing.c **** 		}
+ 383:./Core/Src/input_processing.c **** 		/*EXECUTE INPUT BUTTON2 END */
+ 384:./Core/Src/input_processing.c **** 		//TO DO
+ 385:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 386:./Core/Src/input_processing.c **** 		if(LedToChange==YELLOW){
+ 1080              		.loc 1 386 17
+ 1081 0658 754B     		ldr	r3, .L86+36
+ 1082 065a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1083              		.loc 1 386 5
+ 1084 065c 012B     		cmp	r3, #1
+ 1085 065e 04D1     		bne	.L46
+ 387:./Core/Src/input_processing.c **** 			update_led_buffer(yellow_temp_dur);
+ 1086              		.loc 1 387 4
+ 1087 0660 6A4B     		ldr	r3, .L86
+ 1088 0662 1B68     		ldr	r3, [r3]
+ 1089 0664 1846     		mov	r0, r3
+ 1090 0666 FFF7FEFF 		bl	update_led_buffer
+ 1091              	.L46:
+ 388:./Core/Src/input_processing.c **** 		}
+ 389:./Core/Src/input_processing.c **** 		HAL_UART_Transmit(huart, traffic_light_num,
+ 390:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1092              		.loc 1 390 4
+ 1093 066a 6A4B     		ldr	r3, .L86+8
+ 1094 066c 1A68     		ldr	r2, [r3]
+ 1095 066e 694B     		ldr	r3, .L86+8
+ 1096 0670 5B68     		ldr	r3, [r3, #4]
+ 1097 0672 6949     		ldr	r1, .L86+12
+ 1098 0674 6948     		ldr	r0, .L86+16
+ 1099 0676 FFF7FEFF 		bl	sprintf
+ 1100 067a 0346     		mov	r3, r0
+ 389:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 27
+
+
+ 1101              		.loc 1 389 3
+ 1102 067c 9AB2     		uxth	r2, r3
+ 1103 067e 6423     		movs	r3, #100
+ 1104 0680 6649     		ldr	r1, .L86+16
+ 1105 0682 7868     		ldr	r0, [r7, #4]
+ 1106 0684 FFF7FEFF 		bl	HAL_UART_Transmit
+ 391:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 392:./Core/Src/input_processing.c **** 		break;
+ 1107              		.loc 1 392 3
+ 1108 0688 46E1     		b	.L2
+ 1109              	.L6:
+ 393:./Core/Src/input_processing.c **** 	case INCREASE:
+ 394:./Core/Src/input_processing.c **** 		/* BLINK SINGLE LED START */
+ 395:./Core/Src/input_processing.c **** 		if(timer1_flag==1){
+ 1110              		.loc 1 395 17
+ 1111 068a 654B     		ldr	r3, .L86+20
+ 1112 068c 1B68     		ldr	r3, [r3]
+ 1113              		.loc 1 395 5
+ 1114 068e 012B     		cmp	r3, #1
+ 1115 0690 07D1     		bne	.L47
+ 396:./Core/Src/input_processing.c **** 			setTimer1(250);
+ 1116              		.loc 1 396 4
+ 1117 0692 FA20     		movs	r0, #250
+ 1118 0694 FFF7FEFF 		bl	setTimer1
+ 397:./Core/Src/input_processing.c **** 			ledBlinking(LedToChange);
+ 1119              		.loc 1 397 4
+ 1120 0698 654B     		ldr	r3, .L86+36
+ 1121 069a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1122 069c 1846     		mov	r0, r3
+ 1123 069e FFF7FEFF 		bl	ledBlinking
+ 1124              	.L47:
+ 398:./Core/Src/input_processing.c **** 		}
+ 399:./Core/Src/input_processing.c **** 		/* BLINK SINGLE LED END */
+ 400:./Core/Src/input_processing.c **** 
+ 401:./Core/Src/input_processing.c **** 		/* EXECUTE INPUT BUTTON2 START */
+ 402:./Core/Src/input_processing.c **** 		if(button2_pressed_1s()==TRUE){
+ 1125              		.loc 1 402 6
+ 1126 06a2 FFF7FEFF 		bl	button2_pressed_1s
+ 1127 06a6 0346     		mov	r3, r0
+ 1128              		.loc 1 402 5
+ 1129 06a8 012B     		cmp	r3, #1
+ 1130 06aa 0AD1     		bne	.L48
+ 403:./Core/Src/input_processing.c **** 			print=0;
+ 1131              		.loc 1 403 9
+ 1132 06ac 584B     		ldr	r3, .L86+4
+ 1133 06ae 0022     		movs	r2, #0
+ 1134 06b0 1A60     		str	r2, [r3]
+ 404:./Core/Src/input_processing.c **** 			state=INCREASE_500MS;
+ 1135              		.loc 1 404 9
+ 1136 06b2 5E4B     		ldr	r3, .L86+32
+ 1137 06b4 0622     		movs	r2, #6
+ 1138 06b6 1A70     		strb	r2, [r3]
+ 405:./Core/Src/input_processing.c **** 			setTimer3(500);
+ 1139              		.loc 1 405 4
+ 1140 06b8 4FF4FA70 		mov	r0, #500
+ 1141 06bc FFF7FEFF 		bl	setTimer3
+ 1142 06c0 1CE0     		b	.L49
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 28
+
+
+ 1143              	.L48:
+ 406:./Core/Src/input_processing.c **** 		}else if(button2_pressed()==FALSE){
+ 1144              		.loc 1 406 12
+ 1145 06c2 FFF7FEFF 		bl	button2_pressed
+ 1146 06c6 0346     		mov	r3, r0
+ 1147              		.loc 1 406 11
+ 1148 06c8 002B     		cmp	r3, #0
+ 1149 06ca 16D1     		bne	.L77
+ 407:./Core/Src/input_processing.c **** 			switch(LedToChange){
+ 1150              		.loc 1 407 4
+ 1151 06cc 584B     		ldr	r3, .L86+36
+ 1152 06ce 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1153 06d0 022B     		cmp	r3, #2
+ 1154 06d2 0AD0     		beq	.L50
+ 1155 06d4 022B     		cmp	r3, #2
+ 1156 06d6 11DC     		bgt	.L49
+ 1157 06d8 002B     		cmp	r3, #0
+ 1158 06da 02D0     		beq	.L51
+ 1159 06dc 012B     		cmp	r3, #1
+ 1160 06de 08D0     		beq	.L52
+ 1161 06e0 0CE0     		b	.L49
+ 1162              	.L51:
+ 408:./Core/Src/input_processing.c **** 				case RED:
+ 409:./Core/Src/input_processing.c **** 					state=MODE2;
+ 1163              		.loc 1 409 11
+ 1164 06e2 524B     		ldr	r3, .L86+32
+ 1165 06e4 0222     		movs	r2, #2
+ 1166 06e6 1A70     		strb	r2, [r3]
+ 410:./Core/Src/input_processing.c **** 					break;
+ 1167              		.loc 1 410 6
+ 1168 06e8 08E0     		b	.L49
+ 1169              	.L50:
+ 411:./Core/Src/input_processing.c **** 				case GREEN:
+ 412:./Core/Src/input_processing.c **** 					state=MODE3;
+ 1170              		.loc 1 412 11
+ 1171 06ea 504B     		ldr	r3, .L86+32
+ 1172 06ec 0322     		movs	r2, #3
+ 1173 06ee 1A70     		strb	r2, [r3]
+ 413:./Core/Src/input_processing.c **** 					break;
+ 1174              		.loc 1 413 6
+ 1175 06f0 04E0     		b	.L49
+ 1176              	.L52:
+ 414:./Core/Src/input_processing.c **** 				case YELLOW:
+ 415:./Core/Src/input_processing.c **** 					state=MODE4;
+ 1177              		.loc 1 415 11
+ 1178 06f2 4E4B     		ldr	r3, .L86+32
+ 1179 06f4 0422     		movs	r2, #4
+ 1180 06f6 1A70     		strb	r2, [r3]
+ 416:./Core/Src/input_processing.c **** 					break;
+ 1181              		.loc 1 416 6
+ 1182 06f8 00E0     		b	.L49
+ 1183              	.L77:
+ 417:./Core/Src/input_processing.c **** 			}
+ 418:./Core/Src/input_processing.c **** 		}
+ 1184              		.loc 1 418 3
+ 1185 06fa 00BF     		nop
+ 1186              	.L49:
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 29
+
+
+ 419:./Core/Src/input_processing.c **** 		/* EXECUTE INPUT BUTTON2 START */
+ 420:./Core/Src/input_processing.c **** 
+ 421:./Core/Src/input_processing.c **** 		/* INCREASE DURATION START */
+ 422:./Core/Src/input_processing.c **** 		if(button2_increase1==0){
+ 1187              		.loc 1 422 23
+ 1188 06fc 4D4B     		ldr	r3, .L86+40
+ 1189 06fe 1B68     		ldr	r3, [r3]
+ 1190              		.loc 1 422 5
+ 1191 0700 002B     		cmp	r3, #0
+ 1192 0702 40F00681 		bne	.L78
+ 423:./Core/Src/input_processing.c **** 			increaseTempDur(LedToChange);
+ 1193              		.loc 1 423 4
+ 1194 0706 4A4B     		ldr	r3, .L86+36
+ 1195 0708 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1196 070a 1846     		mov	r0, r3
+ 1197 070c FFF7FEFF 		bl	increaseTempDur
+ 424:./Core/Src/input_processing.c **** 			button2_increase1=1;
+ 1198              		.loc 1 424 21
+ 1199 0710 484B     		ldr	r3, .L86+40
+ 1200 0712 0122     		movs	r2, #1
+ 1201 0714 1A60     		str	r2, [r3]
+ 425:./Core/Src/input_processing.c **** 
+ 426:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 427:./Core/Src/input_processing.c **** 			switch(LedToChange){
+ 1202              		.loc 1 427 4
+ 1203 0716 464B     		ldr	r3, .L86+36
+ 1204 0718 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1205 071a 022B     		cmp	r3, #2
+ 1206 071c 0CD0     		beq	.L54
+ 1207 071e 022B     		cmp	r3, #2
+ 1208 0720 16DC     		bgt	.L55
+ 1209 0722 002B     		cmp	r3, #0
+ 1210 0724 02D0     		beq	.L56
+ 1211 0726 012B     		cmp	r3, #1
+ 1212 0728 0CD0     		beq	.L57
+ 1213 072a 11E0     		b	.L55
+ 1214              	.L56:
+ 428:./Core/Src/input_processing.c **** 				case RED:
+ 429:./Core/Src/input_processing.c **** 					update_led_buffer(red_temp_dur);
+ 1215              		.loc 1 429 6
+ 1216 072c 424B     		ldr	r3, .L86+44
+ 1217 072e 1B68     		ldr	r3, [r3]
+ 1218 0730 1846     		mov	r0, r3
+ 1219 0732 FFF7FEFF 		bl	update_led_buffer
+ 430:./Core/Src/input_processing.c **** 					break;
+ 1220              		.loc 1 430 6
+ 1221 0736 0BE0     		b	.L55
+ 1222              	.L54:
+ 431:./Core/Src/input_processing.c **** 				case GREEN:
+ 432:./Core/Src/input_processing.c **** 					update_led_buffer(green_temp_dur);
+ 1223              		.loc 1 432 6
+ 1224 0738 404B     		ldr	r3, .L86+48
+ 1225 073a 1B68     		ldr	r3, [r3]
+ 1226 073c 1846     		mov	r0, r3
+ 1227 073e FFF7FEFF 		bl	update_led_buffer
+ 433:./Core/Src/input_processing.c **** 					break;
+ 1228              		.loc 1 433 6
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 30
+
+
+ 1229 0742 05E0     		b	.L55
+ 1230              	.L57:
+ 434:./Core/Src/input_processing.c **** 				case YELLOW:
+ 435:./Core/Src/input_processing.c **** 					update_led_buffer(yellow_temp_dur);
+ 1231              		.loc 1 435 6
+ 1232 0744 314B     		ldr	r3, .L86
+ 1233 0746 1B68     		ldr	r3, [r3]
+ 1234 0748 1846     		mov	r0, r3
+ 1235 074a FFF7FEFF 		bl	update_led_buffer
+ 436:./Core/Src/input_processing.c **** 					break;
+ 1236              		.loc 1 436 6
+ 1237 074e 00BF     		nop
+ 1238              	.L55:
+ 437:./Core/Src/input_processing.c **** 			}
+ 438:./Core/Src/input_processing.c **** 			HAL_UART_Transmit(huart, traffic_light_num,
+ 439:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1239              		.loc 1 439 4
+ 1240 0750 304B     		ldr	r3, .L86+8
+ 1241 0752 1A68     		ldr	r2, [r3]
+ 1242 0754 2F4B     		ldr	r3, .L86+8
+ 1243 0756 5B68     		ldr	r3, [r3, #4]
+ 1244 0758 2F49     		ldr	r1, .L86+12
+ 1245 075a 3048     		ldr	r0, .L86+16
+ 1246 075c FFF7FEFF 		bl	sprintf
+ 1247 0760 0346     		mov	r3, r0
+ 438:./Core/Src/input_processing.c **** 			sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1248              		.loc 1 438 4
+ 1249 0762 9AB2     		uxth	r2, r3
+ 1250 0764 6423     		movs	r3, #100
+ 1251 0766 2D49     		ldr	r1, .L86+16
+ 1252 0768 7868     		ldr	r0, [r7, #4]
+ 1253 076a FFF7FEFF 		bl	HAL_UART_Transmit
+ 440:./Core/Src/input_processing.c **** 		}
+ 441:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 442:./Core/Src/input_processing.c **** 		/* INCREASE DURATION END */
+ 443:./Core/Src/input_processing.c **** 		//TO DO
+ 444:./Core/Src/input_processing.c **** 		break;
+ 1254              		.loc 1 444 3
+ 1255 076e D0E0     		b	.L78
+ 1256              	.L5:
+ 445:./Core/Src/input_processing.c **** 	case INCREASE_500MS:
+ 446:./Core/Src/input_processing.c **** 		/* BLINK SINGLE LED START */
+ 447:./Core/Src/input_processing.c **** 		if(timer1_flag==1){
+ 1257              		.loc 1 447 17
+ 1258 0770 2B4B     		ldr	r3, .L86+20
+ 1259 0772 1B68     		ldr	r3, [r3]
+ 1260              		.loc 1 447 5
+ 1261 0774 012B     		cmp	r3, #1
+ 1262 0776 07D1     		bne	.L58
+ 448:./Core/Src/input_processing.c **** 			setTimer1(250);
+ 1263              		.loc 1 448 4
+ 1264 0778 FA20     		movs	r0, #250
+ 1265 077a FFF7FEFF 		bl	setTimer1
+ 449:./Core/Src/input_processing.c **** 			ledBlinking(LedToChange);
+ 1266              		.loc 1 449 4
+ 1267 077e 2C4B     		ldr	r3, .L86+36
+ 1268 0780 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 31
+
+
+ 1269 0782 1846     		mov	r0, r3
+ 1270 0784 FFF7FEFF 		bl	ledBlinking
+ 1271              	.L58:
+ 450:./Core/Src/input_processing.c **** 		}
+ 451:./Core/Src/input_processing.c **** 		/* BLINK SINGLE LED END */
+ 452:./Core/Src/input_processing.c **** 
+ 453:./Core/Src/input_processing.c **** 		/* EXECUTE INPUT BUTTON2 START */
+ 454:./Core/Src/input_processing.c **** 		if(button2_pressed()==FALSE){
+ 1272              		.loc 1 454 6
+ 1273 0788 FFF7FEFF 		bl	button2_pressed
+ 1274 078c 0346     		mov	r3, r0
+ 1275              		.loc 1 454 5
+ 1276 078e 002B     		cmp	r3, #0
+ 1277 0790 16D1     		bne	.L79
+ 455:./Core/Src/input_processing.c **** 			switch(LedToChange){
+ 1278              		.loc 1 455 4
+ 1279 0792 274B     		ldr	r3, .L86+36
+ 1280 0794 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1281 0796 022B     		cmp	r3, #2
+ 1282 0798 0AD0     		beq	.L60
+ 1283 079a 022B     		cmp	r3, #2
+ 1284 079c 11DC     		bgt	.L59
+ 1285 079e 002B     		cmp	r3, #0
+ 1286 07a0 02D0     		beq	.L61
+ 1287 07a2 012B     		cmp	r3, #1
+ 1288 07a4 08D0     		beq	.L62
+ 1289 07a6 0CE0     		b	.L59
+ 1290              	.L61:
+ 456:./Core/Src/input_processing.c **** 				case RED:
+ 457:./Core/Src/input_processing.c **** 					state=MODE2;
+ 1291              		.loc 1 457 11
+ 1292 07a8 204B     		ldr	r3, .L86+32
+ 1293 07aa 0222     		movs	r2, #2
+ 1294 07ac 1A70     		strb	r2, [r3]
+ 458:./Core/Src/input_processing.c **** 					break;
+ 1295              		.loc 1 458 6
+ 1296 07ae 08E0     		b	.L59
+ 1297              	.L60:
+ 459:./Core/Src/input_processing.c **** 				case GREEN:
+ 460:./Core/Src/input_processing.c **** 					state=MODE3;
+ 1298              		.loc 1 460 11
+ 1299 07b0 1E4B     		ldr	r3, .L86+32
+ 1300 07b2 0322     		movs	r2, #3
+ 1301 07b4 1A70     		strb	r2, [r3]
+ 461:./Core/Src/input_processing.c **** 					break;
+ 1302              		.loc 1 461 6
+ 1303 07b6 04E0     		b	.L59
+ 1304              	.L62:
+ 462:./Core/Src/input_processing.c **** 				case YELLOW:
+ 463:./Core/Src/input_processing.c **** 					state=MODE4;
+ 1305              		.loc 1 463 11
+ 1306 07b8 1C4B     		ldr	r3, .L86+32
+ 1307 07ba 0422     		movs	r2, #4
+ 1308 07bc 1A70     		strb	r2, [r3]
+ 464:./Core/Src/input_processing.c **** 					break;
+ 1309              		.loc 1 464 6
+ 1310 07be 00E0     		b	.L59
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 32
+
+
+ 1311              	.L79:
+ 465:./Core/Src/input_processing.c **** 			}
+ 466:./Core/Src/input_processing.c **** 		}
+ 1312              		.loc 1 466 3
+ 1313 07c0 00BF     		nop
+ 1314              	.L59:
+ 467:./Core/Src/input_processing.c **** 		/* EXECUTE INPUT BUTTON2 START */
+ 468:./Core/Src/input_processing.c **** 
+ 469:./Core/Src/input_processing.c **** 		/* INCREASE TEMP DURATION START */
+ 470:./Core/Src/input_processing.c **** 		if(timer3_flag==1){
+ 1315              		.loc 1 470 17
+ 1316 07c2 1F4B     		ldr	r3, .L86+52
+ 1317 07c4 1B68     		ldr	r3, [r3]
+ 1318              		.loc 1 470 5
+ 1319 07c6 012B     		cmp	r3, #1
+ 1320 07c8 51D1     		bne	.L63
+ 471:./Core/Src/input_processing.c **** 			setTimer3(500);
+ 1321              		.loc 1 471 4
+ 1322 07ca 4FF4FA70 		mov	r0, #500
+ 1323 07ce FFF7FEFF 		bl	setTimer3
+ 472:./Core/Src/input_processing.c **** 			increaseTempDur(LedToChange);
+ 1324              		.loc 1 472 4
+ 1325 07d2 174B     		ldr	r3, .L86+36
+ 1326 07d4 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1327 07d6 1846     		mov	r0, r3
+ 1328 07d8 FFF7FEFF 		bl	increaseTempDur
+ 473:./Core/Src/input_processing.c **** 			/* UART TRANSMIT START */
+ 474:./Core/Src/input_processing.c **** 				switch(LedToChange){
+ 1329              		.loc 1 474 5
+ 1330 07dc 144B     		ldr	r3, .L86+36
+ 1331 07de 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1332 07e0 022B     		cmp	r3, #2
+ 1333 07e2 0CD0     		beq	.L64
+ 1334 07e4 022B     		cmp	r3, #2
+ 1335 07e6 33DC     		bgt	.L65
+ 1336 07e8 002B     		cmp	r3, #0
+ 1337 07ea 02D0     		beq	.L66
+ 1338 07ec 012B     		cmp	r3, #1
+ 1339 07ee 29D0     		beq	.L67
+ 1340 07f0 2EE0     		b	.L65
+ 1341              	.L66:
+ 475:./Core/Src/input_processing.c **** 					case RED:
+ 476:./Core/Src/input_processing.c **** 						update_led_buffer(red_temp_dur);
+ 1342              		.loc 1 476 7
+ 1343 07f2 114B     		ldr	r3, .L86+44
+ 1344 07f4 1B68     		ldr	r3, [r3]
+ 1345 07f6 1846     		mov	r0, r3
+ 1346 07f8 FFF7FEFF 		bl	update_led_buffer
+ 477:./Core/Src/input_processing.c **** 						break;
+ 1347              		.loc 1 477 7
+ 1348 07fc 28E0     		b	.L65
+ 1349              	.L64:
+ 478:./Core/Src/input_processing.c **** 					case GREEN:
+ 479:./Core/Src/input_processing.c **** 						update_led_buffer(green_temp_dur);
+ 1350              		.loc 1 479 7
+ 1351 07fe 0F4B     		ldr	r3, .L86+48
+ 1352 0800 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 33
+
+
+ 1353 0802 1846     		mov	r0, r3
+ 1354 0804 FFF7FEFF 		bl	update_led_buffer
+ 480:./Core/Src/input_processing.c **** 						break;
+ 1355              		.loc 1 480 7
+ 1356 0808 22E0     		b	.L65
+ 1357              	.L87:
+ 1358 080a 00BF     		.align	2
+ 1359              	.L86:
+ 1360 080c 00000000 		.word	yellow_temp_dur
+ 1361 0810 00000000 		.word	print
+ 1362 0814 00000000 		.word	led_buffer1
+ 1363 0818 00000000 		.word	.LC0
+ 1364 081c 00000000 		.word	traffic_light_num
+ 1365 0820 00000000 		.word	timer1_flag
+ 1366 0824 00000000 		.word	led_state
+ 1367 0828 00000000 		.word	button1_executed
+ 1368 082c 00000000 		.word	state
+ 1369 0830 00000000 		.word	LedToChange
+ 1370 0834 00000000 		.word	button2_increase1
+ 1371 0838 00000000 		.word	red_temp_dur
+ 1372 083c 00000000 		.word	green_temp_dur
+ 1373 0840 00000000 		.word	timer3_flag
+ 1374              	.L67:
+ 481:./Core/Src/input_processing.c **** 					case YELLOW:
+ 482:./Core/Src/input_processing.c **** 						update_led_buffer(yellow_temp_dur);
+ 1375              		.loc 1 482 7
+ 1376 0844 364B     		ldr	r3, .L88
+ 1377 0846 1B68     		ldr	r3, [r3]
+ 1378 0848 1846     		mov	r0, r3
+ 1379 084a FFF7FEFF 		bl	update_led_buffer
+ 483:./Core/Src/input_processing.c **** 						break;
+ 1380              		.loc 1 483 7
+ 1381 084e 00BF     		nop
+ 1382              	.L65:
+ 484:./Core/Src/input_processing.c **** 				}
+ 485:./Core/Src/input_processing.c **** 				HAL_UART_Transmit(huart, traffic_light_num,
+ 486:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1383              		.loc 1 486 5
+ 1384 0850 344B     		ldr	r3, .L88+4
+ 1385 0852 1A68     		ldr	r2, [r3]
+ 1386 0854 334B     		ldr	r3, .L88+4
+ 1387 0856 5B68     		ldr	r3, [r3, #4]
+ 1388 0858 3349     		ldr	r1, .L88+8
+ 1389 085a 3448     		ldr	r0, .L88+12
+ 1390 085c FFF7FEFF 		bl	sprintf
+ 1391 0860 0346     		mov	r3, r0
+ 485:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1392              		.loc 1 485 5
+ 1393 0862 9AB2     		uxth	r2, r3
+ 1394 0864 6423     		movs	r3, #100
+ 1395 0866 3149     		ldr	r1, .L88+12
+ 1396 0868 7868     		ldr	r0, [r7, #4]
+ 1397 086a FFF7FEFF 		bl	HAL_UART_Transmit
+ 1398              	.L63:
+ 487:./Core/Src/input_processing.c **** 			}
+ 488:./Core/Src/input_processing.c **** 			/* UART TRANSMIT END */
+ 489:./Core/Src/input_processing.c **** 
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 34
+
+
+ 490:./Core/Src/input_processing.c **** 		/* INCREASE TEMP DURATION END */
+ 491:./Core/Src/input_processing.c **** 		//TO DO
+ 492:./Core/Src/input_processing.c **** 		/* UART TRANSMIT START */
+ 493:./Core/Src/input_processing.c **** 		if(LedToChange==RED){
+ 1399              		.loc 1 493 17
+ 1400 086e 304B     		ldr	r3, .L88+16
+ 1401 0870 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1402              		.loc 1 493 5
+ 1403 0872 002B     		cmp	r3, #0
+ 1404 0874 05D1     		bne	.L68
+ 494:./Core/Src/input_processing.c **** 			update_led_buffer(red_temp_dur);
+ 1405              		.loc 1 494 4
+ 1406 0876 2F4B     		ldr	r3, .L88+20
+ 1407 0878 1B68     		ldr	r3, [r3]
+ 1408 087a 1846     		mov	r0, r3
+ 1409 087c FFF7FEFF 		bl	update_led_buffer
+ 1410 0880 12E0     		b	.L69
+ 1411              	.L68:
+ 495:./Core/Src/input_processing.c **** 		}else if(LedToChange==GREEN){
+ 1412              		.loc 1 495 23
+ 1413 0882 2B4B     		ldr	r3, .L88+16
+ 1414 0884 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1415              		.loc 1 495 11
+ 1416 0886 022B     		cmp	r3, #2
+ 1417 0888 05D1     		bne	.L70
+ 496:./Core/Src/input_processing.c **** 			update_led_buffer(green_temp_dur);
+ 1418              		.loc 1 496 4
+ 1419 088a 2B4B     		ldr	r3, .L88+24
+ 1420 088c 1B68     		ldr	r3, [r3]
+ 1421 088e 1846     		mov	r0, r3
+ 1422 0890 FFF7FEFF 		bl	update_led_buffer
+ 1423 0894 08E0     		b	.L69
+ 1424              	.L70:
+ 497:./Core/Src/input_processing.c **** 		}else if(LedToChange==YELLOW){
+ 1425              		.loc 1 497 23
+ 1426 0896 264B     		ldr	r3, .L88+16
+ 1427 0898 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1428              		.loc 1 497 11
+ 1429 089a 012B     		cmp	r3, #1
+ 1430 089c 04D1     		bne	.L69
+ 498:./Core/Src/input_processing.c **** 			update_led_buffer(yellow_temp_dur);
+ 1431              		.loc 1 498 4
+ 1432 089e 204B     		ldr	r3, .L88
+ 1433 08a0 1B68     		ldr	r3, [r3]
+ 1434 08a2 1846     		mov	r0, r3
+ 1435 08a4 FFF7FEFF 		bl	update_led_buffer
+ 1436              	.L69:
+ 499:./Core/Src/input_processing.c **** 		}
+ 500:./Core/Src/input_processing.c **** 
+ 501:./Core/Src/input_processing.c **** 		HAL_UART_Transmit(huart, traffic_light_num,
+ 502:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1437              		.loc 1 502 5
+ 1438 08a8 1E4B     		ldr	r3, .L88+4
+ 1439 08aa 1A68     		ldr	r2, [r3]
+ 1440 08ac 1D4B     		ldr	r3, .L88+4
+ 1441 08ae 5B68     		ldr	r3, [r3, #4]
+ 1442 08b0 1D49     		ldr	r1, .L88+8
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 35
+
+
+ 1443 08b2 1E48     		ldr	r0, .L88+12
+ 1444 08b4 FFF7FEFF 		bl	sprintf
+ 1445 08b8 0346     		mov	r3, r0
+ 501:./Core/Src/input_processing.c **** 				sprintf(traffic_light_num,"!7SEG:%d%d#\r",led_buffer1[0],led_buffer1[1]), 100);
+ 1446              		.loc 1 501 3
+ 1447 08ba 9AB2     		uxth	r2, r3
+ 1448 08bc 6423     		movs	r3, #100
+ 1449 08be 1B49     		ldr	r1, .L88+12
+ 1450 08c0 7868     		ldr	r0, [r7, #4]
+ 1451 08c2 FFF7FEFF 		bl	HAL_UART_Transmit
+ 503:./Core/Src/input_processing.c **** 
+ 504:./Core/Src/input_processing.c **** 		/* UART TRANSMIT END */
+ 505:./Core/Src/input_processing.c **** 		break;
+ 1452              		.loc 1 505 3
+ 1453 08c6 27E0     		b	.L2
+ 1454              	.L3:
+ 506:./Core/Src/input_processing.c **** 	case UPDATE_DURATION:
+ 507:./Core/Src/input_processing.c **** 		updateDuration(LedToChange);
+ 1455              		.loc 1 507 3
+ 1456 08c8 194B     		ldr	r3, .L88+16
+ 1457 08ca 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1458 08cc 1846     		mov	r0, r3
+ 1459 08ce FFF7FEFF 		bl	updateDuration
+ 508:./Core/Src/input_processing.c **** 		if(button3_pressed()==FALSE){
+ 1460              		.loc 1 508 6
+ 1461 08d2 FFF7FEFF 		bl	button3_pressed
+ 1462 08d6 0346     		mov	r3, r0
+ 1463              		.loc 1 508 5
+ 1464 08d8 002B     		cmp	r3, #0
+ 1465 08da 16D1     		bne	.L80
+ 509:./Core/Src/input_processing.c **** 			switch(LedToChange){
+ 1466              		.loc 1 509 4
+ 1467 08dc 144B     		ldr	r3, .L88+16
+ 1468 08de 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1469 08e0 022B     		cmp	r3, #2
+ 1470 08e2 0AD0     		beq	.L72
+ 1471 08e4 022B     		cmp	r3, #2
+ 1472 08e6 16DC     		bgt	.L81
+ 1473 08e8 002B     		cmp	r3, #0
+ 1474 08ea 02D0     		beq	.L73
+ 1475 08ec 012B     		cmp	r3, #1
+ 1476 08ee 08D0     		beq	.L74
+ 510:./Core/Src/input_processing.c **** 				case RED:
+ 511:./Core/Src/input_processing.c **** 					state=MODE2;
+ 512:./Core/Src/input_processing.c **** 					break;
+ 513:./Core/Src/input_processing.c **** 				case GREEN:
+ 514:./Core/Src/input_processing.c **** 					state=MODE3;
+ 515:./Core/Src/input_processing.c **** 					break;
+ 516:./Core/Src/input_processing.c **** 				case YELLOW:
+ 517:./Core/Src/input_processing.c **** 					state=MODE4;
+ 518:./Core/Src/input_processing.c **** 					break;
+ 519:./Core/Src/input_processing.c **** 			}
+ 520:./Core/Src/input_processing.c **** 		}
+ 521:./Core/Src/input_processing.c **** 		//TO DO
+ 522:./Core/Src/input_processing.c **** 		break;
+ 1477              		.loc 1 522 3
+ 1478 08f0 11E0     		b	.L81
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 36
+
+
+ 1479              	.L73:
+ 511:./Core/Src/input_processing.c **** 					break;
+ 1480              		.loc 1 511 11
+ 1481 08f2 124B     		ldr	r3, .L88+28
+ 1482 08f4 0222     		movs	r2, #2
+ 1483 08f6 1A70     		strb	r2, [r3]
+ 512:./Core/Src/input_processing.c **** 				case GREEN:
+ 1484              		.loc 1 512 6
+ 1485 08f8 08E0     		b	.L71
+ 1486              	.L72:
+ 514:./Core/Src/input_processing.c **** 					break;
+ 1487              		.loc 1 514 11
+ 1488 08fa 104B     		ldr	r3, .L88+28
+ 1489 08fc 0322     		movs	r2, #3
+ 1490 08fe 1A70     		strb	r2, [r3]
+ 515:./Core/Src/input_processing.c **** 				case YELLOW:
+ 1491              		.loc 1 515 6
+ 1492 0900 04E0     		b	.L71
+ 1493              	.L74:
+ 517:./Core/Src/input_processing.c **** 					break;
+ 1494              		.loc 1 517 11
+ 1495 0902 0E4B     		ldr	r3, .L88+28
+ 1496 0904 0422     		movs	r2, #4
+ 1497 0906 1A70     		strb	r2, [r3]
+ 518:./Core/Src/input_processing.c **** 			}
+ 1498              		.loc 1 518 6
+ 1499 0908 00E0     		b	.L71
+ 1500              	.L80:
+ 520:./Core/Src/input_processing.c **** 		//TO DO
+ 1501              		.loc 1 520 3
+ 1502 090a 00BF     		nop
+ 1503              	.L71:
+ 1504              		.loc 1 522 3
+ 1505 090c 03E0     		b	.L81
+ 1506              	.L76:
+ 202:./Core/Src/input_processing.c **** 	case MODE2:
+ 1507              		.loc 1 202 3
+ 1508 090e 00BF     		nop
+ 1509 0910 02E0     		b	.L75
+ 1510              	.L78:
+ 444:./Core/Src/input_processing.c **** 	case INCREASE_500MS:
+ 1511              		.loc 1 444 3
+ 1512 0912 00BF     		nop
+ 1513 0914 00E0     		b	.L75
+ 1514              	.L81:
+ 1515              		.loc 1 522 3
+ 1516 0916 00BF     		nop
+ 1517              	.L2:
+ 1518              	.L75:
+ 523:./Core/Src/input_processing.c **** 	}
+ 524:./Core/Src/input_processing.c **** }
+ 1519              		.loc 1 524 1
+ 1520 0918 00BF     		nop
+ 1521 091a 0837     		adds	r7, r7, #8
+ 1522              		.cfi_def_cfa_offset 8
+ 1523 091c BD46     		mov	sp, r7
+ 1524              		.cfi_def_cfa_register 13
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 37
+
+
+ 1525              		@ sp needed
+ 1526 091e 80BD     		pop	{r7, pc}
+ 1527              	.L89:
+ 1528              		.align	2
+ 1529              	.L88:
+ 1530 0920 00000000 		.word	yellow_temp_dur
+ 1531 0924 00000000 		.word	led_buffer1
+ 1532 0928 00000000 		.word	.LC0
+ 1533 092c 00000000 		.word	traffic_light_num
+ 1534 0930 00000000 		.word	LedToChange
+ 1535 0934 00000000 		.word	red_temp_dur
+ 1536 0938 00000000 		.word	green_temp_dur
+ 1537 093c 00000000 		.word	state
+ 1538              		.cfi_endproc
+ 1539              	.LFE68:
+ 1541              		.section	.text.increaseTempDur,"ax",%progbits
+ 1542              		.align	1
+ 1543              		.global	increaseTempDur
+ 1544              		.syntax unified
+ 1545              		.thumb
+ 1546              		.thumb_func
+ 1547              		.fpu softvfp
+ 1549              	increaseTempDur:
+ 1550              	.LFB69:
+ 525:./Core/Src/input_processing.c **** 
+ 526:./Core/Src/input_processing.c **** 
+ 527:./Core/Src/input_processing.c **** void increaseTempDur(enum LED color){
+ 1551              		.loc 1 527 37
+ 1552              		.cfi_startproc
+ 1553              		@ args = 0, pretend = 0, frame = 8
+ 1554              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1555              		@ link register save eliminated.
+ 1556 0000 80B4     		push	{r7}
+ 1557              		.cfi_def_cfa_offset 4
+ 1558              		.cfi_offset 7, -4
+ 1559 0002 83B0     		sub	sp, sp, #12
+ 1560              		.cfi_def_cfa_offset 16
+ 1561 0004 00AF     		add	r7, sp, #0
+ 1562              		.cfi_def_cfa_register 7
+ 1563 0006 0346     		mov	r3, r0
+ 1564 0008 FB71     		strb	r3, [r7, #7]
+ 528:./Core/Src/input_processing.c **** 	switch(color){
+ 1565              		.loc 1 528 2
+ 1566 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1567 000c 022B     		cmp	r3, #2
+ 1568 000e 20D0     		beq	.L91
+ 1569 0010 022B     		cmp	r3, #2
+ 1570 0012 30DC     		bgt	.L98
+ 1571 0014 002B     		cmp	r3, #0
+ 1572 0016 02D0     		beq	.L93
+ 1573 0018 012B     		cmp	r3, #1
+ 1574 001a 0DD0     		beq	.L94
+ 529:./Core/Src/input_processing.c **** 		case RED:
+ 530:./Core/Src/input_processing.c **** 			red_temp_dur++;
+ 531:./Core/Src/input_processing.c **** 			if(red_temp_dur>99)
+ 532:./Core/Src/input_processing.c **** 				red_temp_dur=1;
+ 533:./Core/Src/input_processing.c **** 			break;
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 38
+
+
+ 534:./Core/Src/input_processing.c **** 		case YELLOW:
+ 535:./Core/Src/input_processing.c **** 			yellow_temp_dur++;
+ 536:./Core/Src/input_processing.c **** 			if(yellow_temp_dur>99)
+ 537:./Core/Src/input_processing.c **** 				yellow_temp_dur=1;
+ 538:./Core/Src/input_processing.c **** 			break;
+ 539:./Core/Src/input_processing.c **** 		case GREEN:
+ 540:./Core/Src/input_processing.c **** 			green_temp_dur++;
+ 541:./Core/Src/input_processing.c **** 			if(red_temp_dur>99)
+ 542:./Core/Src/input_processing.c **** 				green_temp_dur=1;
+ 543:./Core/Src/input_processing.c **** 			break;
+ 544:./Core/Src/input_processing.c **** 	}
+ 545:./Core/Src/input_processing.c **** }
+ 1575              		.loc 1 545 1
+ 1576 001c 2BE0     		b	.L98
+ 1577              	.L93:
+ 530:./Core/Src/input_processing.c **** 			if(red_temp_dur>99)
+ 1578              		.loc 1 530 16
+ 1579 001e 184B     		ldr	r3, .L102
+ 1580 0020 1B68     		ldr	r3, [r3]
+ 1581 0022 0133     		adds	r3, r3, #1
+ 1582 0024 164A     		ldr	r2, .L102
+ 1583 0026 1360     		str	r3, [r2]
+ 531:./Core/Src/input_processing.c **** 				red_temp_dur=1;
+ 1584              		.loc 1 531 19
+ 1585 0028 154B     		ldr	r3, .L102
+ 1586 002a 1B68     		ldr	r3, [r3]
+ 531:./Core/Src/input_processing.c **** 				red_temp_dur=1;
+ 1587              		.loc 1 531 6
+ 1588 002c 632B     		cmp	r3, #99
+ 1589 002e 1DDD     		ble	.L99
+ 532:./Core/Src/input_processing.c **** 			break;
+ 1590              		.loc 1 532 17
+ 1591 0030 134B     		ldr	r3, .L102
+ 1592 0032 0122     		movs	r2, #1
+ 1593 0034 1A60     		str	r2, [r3]
+ 533:./Core/Src/input_processing.c **** 		case YELLOW:
+ 1594              		.loc 1 533 4
+ 1595 0036 19E0     		b	.L99
+ 1596              	.L94:
+ 535:./Core/Src/input_processing.c **** 			if(yellow_temp_dur>99)
+ 1597              		.loc 1 535 19
+ 1598 0038 124B     		ldr	r3, .L102+4
+ 1599 003a 1B68     		ldr	r3, [r3]
+ 1600 003c 0133     		adds	r3, r3, #1
+ 1601 003e 114A     		ldr	r2, .L102+4
+ 1602 0040 1360     		str	r3, [r2]
+ 536:./Core/Src/input_processing.c **** 				yellow_temp_dur=1;
+ 1603              		.loc 1 536 22
+ 1604 0042 104B     		ldr	r3, .L102+4
+ 1605 0044 1B68     		ldr	r3, [r3]
+ 536:./Core/Src/input_processing.c **** 				yellow_temp_dur=1;
+ 1606              		.loc 1 536 6
+ 1607 0046 632B     		cmp	r3, #99
+ 1608 0048 12DD     		ble	.L100
+ 537:./Core/Src/input_processing.c **** 			break;
+ 1609              		.loc 1 537 20
+ 1610 004a 0E4B     		ldr	r3, .L102+4
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 39
+
+
+ 1611 004c 0122     		movs	r2, #1
+ 1612 004e 1A60     		str	r2, [r3]
+ 538:./Core/Src/input_processing.c **** 		case GREEN:
+ 1613              		.loc 1 538 4
+ 1614 0050 0EE0     		b	.L100
+ 1615              	.L91:
+ 540:./Core/Src/input_processing.c **** 			if(red_temp_dur>99)
+ 1616              		.loc 1 540 18
+ 1617 0052 0D4B     		ldr	r3, .L102+8
+ 1618 0054 1B68     		ldr	r3, [r3]
+ 1619 0056 0133     		adds	r3, r3, #1
+ 1620 0058 0B4A     		ldr	r2, .L102+8
+ 1621 005a 1360     		str	r3, [r2]
+ 541:./Core/Src/input_processing.c **** 				green_temp_dur=1;
+ 1622              		.loc 1 541 19
+ 1623 005c 084B     		ldr	r3, .L102
+ 1624 005e 1B68     		ldr	r3, [r3]
+ 541:./Core/Src/input_processing.c **** 				green_temp_dur=1;
+ 1625              		.loc 1 541 6
+ 1626 0060 632B     		cmp	r3, #99
+ 1627 0062 07DD     		ble	.L101
+ 542:./Core/Src/input_processing.c **** 			break;
+ 1628              		.loc 1 542 19
+ 1629 0064 084B     		ldr	r3, .L102+8
+ 1630 0066 0122     		movs	r2, #1
+ 1631 0068 1A60     		str	r2, [r3]
+ 543:./Core/Src/input_processing.c **** 	}
+ 1632              		.loc 1 543 4
+ 1633 006a 03E0     		b	.L101
+ 1634              	.L99:
+ 533:./Core/Src/input_processing.c **** 		case YELLOW:
+ 1635              		.loc 1 533 4
+ 1636 006c 00BF     		nop
+ 1637 006e 02E0     		b	.L98
+ 1638              	.L100:
+ 538:./Core/Src/input_processing.c **** 		case GREEN:
+ 1639              		.loc 1 538 4
+ 1640 0070 00BF     		nop
+ 1641 0072 00E0     		b	.L98
+ 1642              	.L101:
+ 543:./Core/Src/input_processing.c **** 	}
+ 1643              		.loc 1 543 4
+ 1644 0074 00BF     		nop
+ 1645              	.L98:
+ 1646              		.loc 1 545 1
+ 1647 0076 00BF     		nop
+ 1648 0078 0C37     		adds	r7, r7, #12
+ 1649              		.cfi_def_cfa_offset 4
+ 1650 007a BD46     		mov	sp, r7
+ 1651              		.cfi_def_cfa_register 13
+ 1652              		@ sp needed
+ 1653 007c 80BC     		pop	{r7}
+ 1654              		.cfi_restore 7
+ 1655              		.cfi_def_cfa_offset 0
+ 1656 007e 7047     		bx	lr
+ 1657              	.L103:
+ 1658              		.align	2
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 40
+
+
+ 1659              	.L102:
+ 1660 0080 00000000 		.word	red_temp_dur
+ 1661 0084 00000000 		.word	yellow_temp_dur
+ 1662 0088 00000000 		.word	green_temp_dur
+ 1663              		.cfi_endproc
+ 1664              	.LFE69:
+ 1666              		.section	.text.updateDuration,"ax",%progbits
+ 1667              		.align	1
+ 1668              		.global	updateDuration
+ 1669              		.syntax unified
+ 1670              		.thumb
+ 1671              		.thumb_func
+ 1672              		.fpu softvfp
+ 1674              	updateDuration:
+ 1675              	.LFB70:
+ 546:./Core/Src/input_processing.c **** 
+ 547:./Core/Src/input_processing.c **** void updateDuration(enum LED color){
+ 1676              		.loc 1 547 36
+ 1677              		.cfi_startproc
+ 1678              		@ args = 0, pretend = 0, frame = 8
+ 1679              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1680              		@ link register save eliminated.
+ 1681 0000 80B4     		push	{r7}
+ 1682              		.cfi_def_cfa_offset 4
+ 1683              		.cfi_offset 7, -4
+ 1684 0002 83B0     		sub	sp, sp, #12
+ 1685              		.cfi_def_cfa_offset 16
+ 1686 0004 00AF     		add	r7, sp, #0
+ 1687              		.cfi_def_cfa_register 7
+ 1688 0006 0346     		mov	r3, r0
+ 1689 0008 FB71     		strb	r3, [r7, #7]
+ 548:./Core/Src/input_processing.c **** 	switch(color){
+ 1690              		.loc 1 548 2
+ 1691 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 1692 000c 022B     		cmp	r3, #2
+ 1693 000e 10D0     		beq	.L105
+ 1694 0010 022B     		cmp	r3, #2
+ 1695 0012 13DC     		bgt	.L109
+ 1696 0014 002B     		cmp	r3, #0
+ 1697 0016 02D0     		beq	.L107
+ 1698 0018 012B     		cmp	r3, #1
+ 1699 001a 05D0     		beq	.L108
+ 549:./Core/Src/input_processing.c **** 		case RED:
+ 550:./Core/Src/input_processing.c **** 			RED_DURATION=red_temp_dur;
+ 551:./Core/Src/input_processing.c **** 			break;
+ 552:./Core/Src/input_processing.c **** 		case YELLOW:
+ 553:./Core/Src/input_processing.c **** 			YELLOW_DURATION=yellow_temp_dur;
+ 554:./Core/Src/input_processing.c **** 			break;
+ 555:./Core/Src/input_processing.c **** 		case GREEN:
+ 556:./Core/Src/input_processing.c **** 			GREEN_DURATION=green_temp_dur;
+ 557:./Core/Src/input_processing.c **** 			break;
+ 558:./Core/Src/input_processing.c **** 	}
+ 559:./Core/Src/input_processing.c **** }
+ 1700              		.loc 1 559 1
+ 1701 001c 0EE0     		b	.L109
+ 1702              	.L107:
+ 550:./Core/Src/input_processing.c **** 			break;
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 41
+
+
+ 1703              		.loc 1 550 16
+ 1704 001e 0A4B     		ldr	r3, .L110
+ 1705 0020 1B68     		ldr	r3, [r3]
+ 1706 0022 0A4A     		ldr	r2, .L110+4
+ 1707 0024 1360     		str	r3, [r2]
+ 551:./Core/Src/input_processing.c **** 		case YELLOW:
+ 1708              		.loc 1 551 4
+ 1709 0026 09E0     		b	.L106
+ 1710              	.L108:
+ 553:./Core/Src/input_processing.c **** 			break;
+ 1711              		.loc 1 553 19
+ 1712 0028 094B     		ldr	r3, .L110+8
+ 1713 002a 1B68     		ldr	r3, [r3]
+ 1714 002c 094A     		ldr	r2, .L110+12
+ 1715 002e 1360     		str	r3, [r2]
+ 554:./Core/Src/input_processing.c **** 		case GREEN:
+ 1716              		.loc 1 554 4
+ 1717 0030 04E0     		b	.L106
+ 1718              	.L105:
+ 556:./Core/Src/input_processing.c **** 			break;
+ 1719              		.loc 1 556 18
+ 1720 0032 094B     		ldr	r3, .L110+16
+ 1721 0034 1B68     		ldr	r3, [r3]
+ 1722 0036 094A     		ldr	r2, .L110+20
+ 1723 0038 1360     		str	r3, [r2]
+ 557:./Core/Src/input_processing.c **** 	}
+ 1724              		.loc 1 557 4
+ 1725 003a 00BF     		nop
+ 1726              	.L106:
+ 1727              	.L109:
+ 1728              		.loc 1 559 1
+ 1729 003c 00BF     		nop
+ 1730 003e 0C37     		adds	r7, r7, #12
+ 1731              		.cfi_def_cfa_offset 4
+ 1732 0040 BD46     		mov	sp, r7
+ 1733              		.cfi_def_cfa_register 13
+ 1734              		@ sp needed
+ 1735 0042 80BC     		pop	{r7}
+ 1736              		.cfi_restore 7
+ 1737              		.cfi_def_cfa_offset 0
+ 1738 0044 7047     		bx	lr
+ 1739              	.L111:
+ 1740 0046 00BF     		.align	2
+ 1741              	.L110:
+ 1742 0048 00000000 		.word	red_temp_dur
+ 1743 004c 00000000 		.word	RED_DURATION
+ 1744 0050 00000000 		.word	yellow_temp_dur
+ 1745 0054 00000000 		.word	YELLOW_DURATION
+ 1746 0058 00000000 		.word	green_temp_dur
+ 1747 005c 00000000 		.word	GREEN_DURATION
+ 1748              		.cfi_endproc
+ 1749              	.LFE70:
+ 1751              		.section	.text.displaySingleLedsMode1,"ax",%progbits
+ 1752              		.align	1
+ 1753              		.global	displaySingleLedsMode1
+ 1754              		.syntax unified
+ 1755              		.thumb
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 42
+
+
+ 1756              		.thumb_func
+ 1757              		.fpu softvfp
+ 1759              	displaySingleLedsMode1:
+ 1760              	.LFB71:
+ 560:./Core/Src/input_processing.c **** 
+ 561:./Core/Src/input_processing.c **** 
+ 562:./Core/Src/input_processing.c **** 
+ 563:./Core/Src/input_processing.c **** void displaySingleLedsMode1(){
+ 1761              		.loc 1 563 30
+ 1762              		.cfi_startproc
+ 1763              		@ args = 0, pretend = 0, frame = 0
+ 1764              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1765 0000 80B5     		push	{r7, lr}
+ 1766              		.cfi_def_cfa_offset 8
+ 1767              		.cfi_offset 7, -8
+ 1768              		.cfi_offset 14, -4
+ 1769 0002 00AF     		add	r7, sp, #0
+ 1770              		.cfi_def_cfa_register 7
+ 564:./Core/Src/input_processing.c **** 	if(current_led_way1==RED){
+ 1771              		.loc 1 564 21
+ 1772 0004 124B     		ldr	r3, .L120
+ 1773 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1774              		.loc 1 564 4
+ 1775 0008 002B     		cmp	r3, #0
+ 1776 000a 01D1     		bne	.L113
+ 565:./Core/Src/input_processing.c **** 		turnOnRed1();  // TURN ON RED LED
+ 1777              		.loc 1 565 3
+ 1778 000c FFF7FEFF 		bl	turnOnRed1
+ 1779              	.L113:
+ 566:./Core/Src/input_processing.c **** 	}
+ 567:./Core/Src/input_processing.c **** 	if(current_led_way1==GREEN){
+ 1780              		.loc 1 567 21
+ 1781 0010 0F4B     		ldr	r3, .L120
+ 1782 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1783              		.loc 1 567 4
+ 1784 0014 022B     		cmp	r3, #2
+ 1785 0016 01D1     		bne	.L114
+ 568:./Core/Src/input_processing.c **** 		turnOnGreen1();  // TURN ON GREEN LED
+ 1786              		.loc 1 568 3
+ 1787 0018 FFF7FEFF 		bl	turnOnGreen1
+ 1788              	.L114:
+ 569:./Core/Src/input_processing.c **** 	}
+ 570:./Core/Src/input_processing.c **** 	if(current_led_way1==YELLOW){
+ 1789              		.loc 1 570 21
+ 1790 001c 0C4B     		ldr	r3, .L120
+ 1791 001e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1792              		.loc 1 570 4
+ 1793 0020 012B     		cmp	r3, #1
+ 1794 0022 01D1     		bne	.L115
+ 571:./Core/Src/input_processing.c **** 		turnOnYellow1();  // TURN ON YELLOW LED
+ 1795              		.loc 1 571 3
+ 1796 0024 FFF7FEFF 		bl	turnOnYellow1
+ 1797              	.L115:
+ 572:./Core/Src/input_processing.c **** 	}
+ 573:./Core/Src/input_processing.c **** 
+ 574:./Core/Src/input_processing.c **** 	if(current_led_way2==RED){
+ 1798              		.loc 1 574 21
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 43
+
+
+ 1799 0028 0A4B     		ldr	r3, .L120+4
+ 1800 002a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1801              		.loc 1 574 4
+ 1802 002c 002B     		cmp	r3, #0
+ 1803 002e 01D1     		bne	.L116
+ 575:./Core/Src/input_processing.c **** 		turnOnRed2();  // TURN ON RED LED
+ 1804              		.loc 1 575 3
+ 1805 0030 FFF7FEFF 		bl	turnOnRed2
+ 1806              	.L116:
+ 576:./Core/Src/input_processing.c **** 	}
+ 577:./Core/Src/input_processing.c **** 	if(current_led_way2==GREEN){
+ 1807              		.loc 1 577 21
+ 1808 0034 074B     		ldr	r3, .L120+4
+ 1809 0036 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1810              		.loc 1 577 4
+ 1811 0038 022B     		cmp	r3, #2
+ 1812 003a 01D1     		bne	.L117
+ 578:./Core/Src/input_processing.c **** 		turnOnGreen2();  // TURN ON GREEN LED
+ 1813              		.loc 1 578 3
+ 1814 003c FFF7FEFF 		bl	turnOnGreen2
+ 1815              	.L117:
+ 579:./Core/Src/input_processing.c **** 	}
+ 580:./Core/Src/input_processing.c **** 	if(current_led_way2==YELLOW){
+ 1816              		.loc 1 580 21
+ 1817 0040 044B     		ldr	r3, .L120+4
+ 1818 0042 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1819              		.loc 1 580 4
+ 1820 0044 012B     		cmp	r3, #1
+ 1821 0046 01D1     		bne	.L119
+ 581:./Core/Src/input_processing.c **** 		turnOnYellow2();  // TURN ON YELLOW LED
+ 1822              		.loc 1 581 3
+ 1823 0048 FFF7FEFF 		bl	turnOnYellow2
+ 1824              	.L119:
+ 582:./Core/Src/input_processing.c **** 	}
+ 583:./Core/Src/input_processing.c **** }
+ 1825              		.loc 1 583 1
+ 1826 004c 00BF     		nop
+ 1827 004e 80BD     		pop	{r7, pc}
+ 1828              	.L121:
+ 1829              		.align	2
+ 1830              	.L120:
+ 1831 0050 00000000 		.word	current_led_way1
+ 1832 0054 00000000 		.word	current_led_way2
+ 1833              		.cfi_endproc
+ 1834              	.LFE71:
+ 1836              		.section	.text.trafficLightCount,"ax",%progbits
+ 1837              		.align	1
+ 1838              		.global	trafficLightCount
+ 1839              		.syntax unified
+ 1840              		.thumb
+ 1841              		.thumb_func
+ 1842              		.fpu softvfp
+ 1844              	trafficLightCount:
+ 1845              	.LFB72:
+ 584:./Core/Src/input_processing.c **** 
+ 585:./Core/Src/input_processing.c **** void trafficLightCount(int*leds_count,enum LED*current_led){
+ 1846              		.loc 1 585 60
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 44
+
+
+ 1847              		.cfi_startproc
+ 1848              		@ args = 0, pretend = 0, frame = 8
+ 1849              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1850              		@ link register save eliminated.
+ 1851 0000 80B4     		push	{r7}
+ 1852              		.cfi_def_cfa_offset 4
+ 1853              		.cfi_offset 7, -4
+ 1854 0002 83B0     		sub	sp, sp, #12
+ 1855              		.cfi_def_cfa_offset 16
+ 1856 0004 00AF     		add	r7, sp, #0
+ 1857              		.cfi_def_cfa_register 7
+ 1858 0006 7860     		str	r0, [r7, #4]
+ 1859 0008 3960     		str	r1, [r7]
+ 586:./Core/Src/input_processing.c **** 	if(*current_led==RED){
+ 1860              		.loc 1 586 5
+ 1861 000a 3B68     		ldr	r3, [r7]
+ 1862 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1863              		.loc 1 586 4
+ 1864 000e 002B     		cmp	r3, #0
+ 1865 0010 10D1     		bne	.L123
+ 587:./Core/Src/input_processing.c **** 		leds_count[0]--;
+ 1866              		.loc 1 587 13
+ 1867 0012 7B68     		ldr	r3, [r7, #4]
+ 1868 0014 1B68     		ldr	r3, [r3]
+ 1869              		.loc 1 587 16
+ 1870 0016 5A1E     		subs	r2, r3, #1
+ 1871 0018 7B68     		ldr	r3, [r7, #4]
+ 1872 001a 1A60     		str	r2, [r3]
+ 588:./Core/Src/input_processing.c **** 		if(leds_count[0]<=0){
+ 1873              		.loc 1 588 16
+ 1874 001c 7B68     		ldr	r3, [r7, #4]
+ 1875 001e 1B68     		ldr	r3, [r3]
+ 1876              		.loc 1 588 5
+ 1877 0020 002B     		cmp	r3, #0
+ 1878 0022 34DC     		bgt	.L126
+ 589:./Core/Src/input_processing.c **** 			leds_count[0]=RED_DURATION;
+ 1879              		.loc 1 589 17
+ 1880 0024 1C4B     		ldr	r3, .L127
+ 1881 0026 1A68     		ldr	r2, [r3]
+ 1882 0028 7B68     		ldr	r3, [r7, #4]
+ 1883 002a 1A60     		str	r2, [r3]
+ 590:./Core/Src/input_processing.c **** 			*current_led=GREEN;
+ 1884              		.loc 1 590 16
+ 1885 002c 3B68     		ldr	r3, [r7]
+ 1886 002e 0222     		movs	r2, #2
+ 1887 0030 1A70     		strb	r2, [r3]
+ 591:./Core/Src/input_processing.c **** 		}
+ 592:./Core/Src/input_processing.c **** 	}
+ 593:./Core/Src/input_processing.c **** 	else if(*current_led==GREEN){
+ 594:./Core/Src/input_processing.c **** 		leds_count[1]--;
+ 595:./Core/Src/input_processing.c **** 		if(leds_count[1]<=0){
+ 596:./Core/Src/input_processing.c **** 			leds_count[1]=GREEN_DURATION;
+ 597:./Core/Src/input_processing.c **** 			*current_led=YELLOW;
+ 598:./Core/Src/input_processing.c **** 		}
+ 599:./Core/Src/input_processing.c **** 	}
+ 600:./Core/Src/input_processing.c **** 	else if(*current_led==YELLOW){
+ 601:./Core/Src/input_processing.c **** 		leds_count[2]--;
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 45
+
+
+ 602:./Core/Src/input_processing.c **** 		if(leds_count[2]<=0){
+ 603:./Core/Src/input_processing.c **** 			leds_count[2]=YELLOW_DURATION;
+ 604:./Core/Src/input_processing.c **** 			*current_led=RED;
+ 605:./Core/Src/input_processing.c **** 		}
+ 606:./Core/Src/input_processing.c **** 	}
+ 607:./Core/Src/input_processing.c **** }
+ 1888              		.loc 1 607 1
+ 1889 0032 2CE0     		b	.L126
+ 1890              	.L123:
+ 593:./Core/Src/input_processing.c **** 		leds_count[1]--;
+ 1891              		.loc 1 593 10
+ 1892 0034 3B68     		ldr	r3, [r7]
+ 1893 0036 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 593:./Core/Src/input_processing.c **** 		leds_count[1]--;
+ 1894              		.loc 1 593 9
+ 1895 0038 022B     		cmp	r3, #2
+ 1896 003a 12D1     		bne	.L125
+ 594:./Core/Src/input_processing.c **** 		if(leds_count[1]<=0){
+ 1897              		.loc 1 594 13
+ 1898 003c 7B68     		ldr	r3, [r7, #4]
+ 1899 003e 0433     		adds	r3, r3, #4
+ 1900 0040 1A68     		ldr	r2, [r3]
+ 594:./Core/Src/input_processing.c **** 		if(leds_count[1]<=0){
+ 1901              		.loc 1 594 16
+ 1902 0042 013A     		subs	r2, r2, #1
+ 1903 0044 1A60     		str	r2, [r3]
+ 595:./Core/Src/input_processing.c **** 			leds_count[1]=GREEN_DURATION;
+ 1904              		.loc 1 595 16
+ 1905 0046 7B68     		ldr	r3, [r7, #4]
+ 1906 0048 0433     		adds	r3, r3, #4
+ 1907 004a 1B68     		ldr	r3, [r3]
+ 595:./Core/Src/input_processing.c **** 			leds_count[1]=GREEN_DURATION;
+ 1908              		.loc 1 595 5
+ 1909 004c 002B     		cmp	r3, #0
+ 1910 004e 1EDC     		bgt	.L126
+ 596:./Core/Src/input_processing.c **** 			*current_led=YELLOW;
+ 1911              		.loc 1 596 14
+ 1912 0050 7B68     		ldr	r3, [r7, #4]
+ 1913 0052 0433     		adds	r3, r3, #4
+ 596:./Core/Src/input_processing.c **** 			*current_led=YELLOW;
+ 1914              		.loc 1 596 17
+ 1915 0054 114A     		ldr	r2, .L127+4
+ 1916 0056 1268     		ldr	r2, [r2]
+ 1917 0058 1A60     		str	r2, [r3]
+ 597:./Core/Src/input_processing.c **** 		}
+ 1918              		.loc 1 597 16
+ 1919 005a 3B68     		ldr	r3, [r7]
+ 1920 005c 0122     		movs	r2, #1
+ 1921 005e 1A70     		strb	r2, [r3]
+ 1922              		.loc 1 607 1
+ 1923 0060 15E0     		b	.L126
+ 1924              	.L125:
+ 600:./Core/Src/input_processing.c **** 		leds_count[2]--;
+ 1925              		.loc 1 600 10
+ 1926 0062 3B68     		ldr	r3, [r7]
+ 1927 0064 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 600:./Core/Src/input_processing.c **** 		leds_count[2]--;
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 46
+
+
+ 1928              		.loc 1 600 9
+ 1929 0066 012B     		cmp	r3, #1
+ 1930 0068 11D1     		bne	.L126
+ 601:./Core/Src/input_processing.c **** 		if(leds_count[2]<=0){
+ 1931              		.loc 1 601 13
+ 1932 006a 7B68     		ldr	r3, [r7, #4]
+ 1933 006c 0833     		adds	r3, r3, #8
+ 1934 006e 1A68     		ldr	r2, [r3]
+ 601:./Core/Src/input_processing.c **** 		if(leds_count[2]<=0){
+ 1935              		.loc 1 601 16
+ 1936 0070 013A     		subs	r2, r2, #1
+ 1937 0072 1A60     		str	r2, [r3]
+ 602:./Core/Src/input_processing.c **** 			leds_count[2]=YELLOW_DURATION;
+ 1938              		.loc 1 602 16
+ 1939 0074 7B68     		ldr	r3, [r7, #4]
+ 1940 0076 0833     		adds	r3, r3, #8
+ 1941 0078 1B68     		ldr	r3, [r3]
+ 602:./Core/Src/input_processing.c **** 			leds_count[2]=YELLOW_DURATION;
+ 1942              		.loc 1 602 5
+ 1943 007a 002B     		cmp	r3, #0
+ 1944 007c 07DC     		bgt	.L126
+ 603:./Core/Src/input_processing.c **** 			*current_led=RED;
+ 1945              		.loc 1 603 14
+ 1946 007e 7B68     		ldr	r3, [r7, #4]
+ 1947 0080 0833     		adds	r3, r3, #8
+ 603:./Core/Src/input_processing.c **** 			*current_led=RED;
+ 1948              		.loc 1 603 17
+ 1949 0082 074A     		ldr	r2, .L127+8
+ 1950 0084 1268     		ldr	r2, [r2]
+ 1951 0086 1A60     		str	r2, [r3]
+ 604:./Core/Src/input_processing.c **** 		}
+ 1952              		.loc 1 604 16
+ 1953 0088 3B68     		ldr	r3, [r7]
+ 1954 008a 0022     		movs	r2, #0
+ 1955 008c 1A70     		strb	r2, [r3]
+ 1956              	.L126:
+ 1957              		.loc 1 607 1
+ 1958 008e 00BF     		nop
+ 1959 0090 0C37     		adds	r7, r7, #12
+ 1960              		.cfi_def_cfa_offset 4
+ 1961 0092 BD46     		mov	sp, r7
+ 1962              		.cfi_def_cfa_register 13
+ 1963              		@ sp needed
+ 1964 0094 80BC     		pop	{r7}
+ 1965              		.cfi_restore 7
+ 1966              		.cfi_def_cfa_offset 0
+ 1967 0096 7047     		bx	lr
+ 1968              	.L128:
+ 1969              		.align	2
+ 1970              	.L127:
+ 1971 0098 00000000 		.word	RED_DURATION
+ 1972 009c 00000000 		.word	GREEN_DURATION
+ 1973 00a0 00000000 		.word	YELLOW_DURATION
+ 1974              		.cfi_endproc
+ 1975              	.LFE72:
+ 1977              		.section	.text.turnOffSingleLed,"ax",%progbits
+ 1978              		.align	1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 47
+
+
+ 1979              		.global	turnOffSingleLed
+ 1980              		.syntax unified
+ 1981              		.thumb
+ 1982              		.thumb_func
+ 1983              		.fpu softvfp
+ 1985              	turnOffSingleLed:
+ 1986              	.LFB73:
+ 608:./Core/Src/input_processing.c **** 
+ 609:./Core/Src/input_processing.c **** void turnOffSingleLed(){
+ 1987              		.loc 1 609 24
+ 1988              		.cfi_startproc
+ 1989              		@ args = 0, pretend = 0, frame = 0
+ 1990              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1991 0000 80B5     		push	{r7, lr}
+ 1992              		.cfi_def_cfa_offset 8
+ 1993              		.cfi_offset 7, -8
+ 1994              		.cfi_offset 14, -4
+ 1995 0002 00AF     		add	r7, sp, #0
+ 1996              		.cfi_def_cfa_register 7
+ 610:./Core/Src/input_processing.c **** 	turnOff1();
+ 1997              		.loc 1 610 2
+ 1998 0004 FFF7FEFF 		bl	turnOff1
+ 611:./Core/Src/input_processing.c **** 	turnOff2();
+ 1999              		.loc 1 611 2
+ 2000 0008 FFF7FEFF 		bl	turnOff2
+ 612:./Core/Src/input_processing.c **** }
+ 2001              		.loc 1 612 1
+ 2002 000c 00BF     		nop
+ 2003 000e 80BD     		pop	{r7, pc}
+ 2004              		.cfi_endproc
+ 2005              	.LFE73:
+ 2007              		.section	.text.ledBlinking,"ax",%progbits
+ 2008              		.align	1
+ 2009              		.global	ledBlinking
+ 2010              		.syntax unified
+ 2011              		.thumb
+ 2012              		.thumb_func
+ 2013              		.fpu softvfp
+ 2015              	ledBlinking:
+ 2016              	.LFB74:
+ 613:./Core/Src/input_processing.c **** 
+ 614:./Core/Src/input_processing.c **** void ledBlinking(enum LED led_to_change){
+ 2017              		.loc 1 614 41
+ 2018              		.cfi_startproc
+ 2019              		@ args = 0, pretend = 0, frame = 8
+ 2020              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2021 0000 80B5     		push	{r7, lr}
+ 2022              		.cfi_def_cfa_offset 8
+ 2023              		.cfi_offset 7, -8
+ 2024              		.cfi_offset 14, -4
+ 2025 0002 82B0     		sub	sp, sp, #8
+ 2026              		.cfi_def_cfa_offset 16
+ 2027 0004 00AF     		add	r7, sp, #0
+ 2028              		.cfi_def_cfa_register 7
+ 2029 0006 0346     		mov	r3, r0
+ 2030 0008 FB71     		strb	r3, [r7, #7]
+ 615:./Core/Src/input_processing.c **** 	if(led_state==0){
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 48
+
+
+ 2031              		.loc 1 615 14
+ 2032 000a 184B     		ldr	r3, .L138
+ 2033 000c 1B68     		ldr	r3, [r3]
+ 2034              		.loc 1 615 4
+ 2035 000e 002B     		cmp	r3, #0
+ 2036 0010 1CD1     		bne	.L131
+ 616:./Core/Src/input_processing.c **** 		switch(led_to_change){
+ 2037              		.loc 1 616 3
+ 2038 0012 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 2039 0014 022B     		cmp	r3, #2
+ 2040 0016 10D0     		beq	.L132
+ 2041 0018 022B     		cmp	r3, #2
+ 2042 001a 13DC     		bgt	.L133
+ 2043 001c 002B     		cmp	r3, #0
+ 2044 001e 02D0     		beq	.L134
+ 2045 0020 012B     		cmp	r3, #1
+ 2046 0022 05D0     		beq	.L135
+ 2047 0024 0EE0     		b	.L133
+ 2048              	.L134:
+ 617:./Core/Src/input_processing.c **** 		case RED:
+ 618:./Core/Src/input_processing.c **** 			turnOnRed1();
+ 2049              		.loc 1 618 4
+ 2050 0026 FFF7FEFF 		bl	turnOnRed1
+ 619:./Core/Src/input_processing.c **** 			turnOnRed2();
+ 2051              		.loc 1 619 4
+ 2052 002a FFF7FEFF 		bl	turnOnRed2
+ 620:./Core/Src/input_processing.c **** 			break;
+ 2053              		.loc 1 620 4
+ 2054 002e 09E0     		b	.L133
+ 2055              	.L135:
+ 621:./Core/Src/input_processing.c **** 		case YELLOW:
+ 622:./Core/Src/input_processing.c **** 			turnOnYellow1();
+ 2056              		.loc 1 622 4
+ 2057 0030 FFF7FEFF 		bl	turnOnYellow1
+ 623:./Core/Src/input_processing.c **** 			turnOnYellow2();
+ 2058              		.loc 1 623 4
+ 2059 0034 FFF7FEFF 		bl	turnOnYellow2
+ 624:./Core/Src/input_processing.c **** 			break;
+ 2060              		.loc 1 624 4
+ 2061 0038 04E0     		b	.L133
+ 2062              	.L132:
+ 625:./Core/Src/input_processing.c **** 		case GREEN:
+ 626:./Core/Src/input_processing.c **** 			turnOnGreen1();
+ 2063              		.loc 1 626 4
+ 2064 003a FFF7FEFF 		bl	turnOnGreen1
+ 627:./Core/Src/input_processing.c **** 			turnOnGreen2();
+ 2065              		.loc 1 627 4
+ 2066 003e FFF7FEFF 		bl	turnOnGreen2
+ 628:./Core/Src/input_processing.c **** 			break;
+ 2067              		.loc 1 628 4
+ 2068 0042 00BF     		nop
+ 2069              	.L133:
+ 629:./Core/Src/input_processing.c **** 		}
+ 630:./Core/Src/input_processing.c **** 		led_state=1;
+ 2070              		.loc 1 630 12
+ 2071 0044 094B     		ldr	r3, .L138
+ 2072 0046 0122     		movs	r2, #1
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 49
+
+
+ 2073 0048 1A60     		str	r2, [r3]
+ 631:./Core/Src/input_processing.c **** 	}else if(led_state==1){
+ 632:./Core/Src/input_processing.c **** 		turnOff1();
+ 633:./Core/Src/input_processing.c **** 		turnOff2();
+ 634:./Core/Src/input_processing.c **** 		led_state=0;
+ 635:./Core/Src/input_processing.c **** 	}
+ 636:./Core/Src/input_processing.c **** 
+ 637:./Core/Src/input_processing.c **** }
+ 2074              		.loc 1 637 1
+ 2075 004a 0AE0     		b	.L137
+ 2076              	.L131:
+ 631:./Core/Src/input_processing.c **** 	}else if(led_state==1){
+ 2077              		.loc 1 631 20
+ 2078 004c 074B     		ldr	r3, .L138
+ 2079 004e 1B68     		ldr	r3, [r3]
+ 631:./Core/Src/input_processing.c **** 	}else if(led_state==1){
+ 2080              		.loc 1 631 10
+ 2081 0050 012B     		cmp	r3, #1
+ 2082 0052 06D1     		bne	.L137
+ 632:./Core/Src/input_processing.c **** 		turnOff2();
+ 2083              		.loc 1 632 3
+ 2084 0054 FFF7FEFF 		bl	turnOff1
+ 633:./Core/Src/input_processing.c **** 		led_state=0;
+ 2085              		.loc 1 633 3
+ 2086 0058 FFF7FEFF 		bl	turnOff2
+ 634:./Core/Src/input_processing.c **** 	}
+ 2087              		.loc 1 634 12
+ 2088 005c 034B     		ldr	r3, .L138
+ 2089 005e 0022     		movs	r2, #0
+ 2090 0060 1A60     		str	r2, [r3]
+ 2091              	.L137:
+ 2092              		.loc 1 637 1
+ 2093 0062 00BF     		nop
+ 2094 0064 0837     		adds	r7, r7, #8
+ 2095              		.cfi_def_cfa_offset 8
+ 2096 0066 BD46     		mov	sp, r7
+ 2097              		.cfi_def_cfa_register 13
+ 2098              		@ sp needed
+ 2099 0068 80BD     		pop	{r7, pc}
+ 2100              	.L139:
+ 2101 006a 00BF     		.align	2
+ 2102              	.L138:
+ 2103 006c 00000000 		.word	led_state
+ 2104              		.cfi_endproc
+ 2105              	.LFE74:
+ 2107              		.section	.text.PES_LED_ON,"ax",%progbits
+ 2108              		.align	1
+ 2109              		.global	PES_LED_ON
+ 2110              		.syntax unified
+ 2111              		.thumb
+ 2112              		.thumb_func
+ 2113              		.fpu softvfp
+ 2115              	PES_LED_ON:
+ 2116              	.LFB75:
+ 638:./Core/Src/input_processing.c **** 
+ 639:./Core/Src/input_processing.c **** void PES_LED_ON(){
+ 2117              		.loc 1 639 18
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 50
+
+
+ 2118              		.cfi_startproc
+ 2119              		@ args = 0, pretend = 0, frame = 0
+ 2120              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2121 0000 80B5     		push	{r7, lr}
+ 2122              		.cfi_def_cfa_offset 8
+ 2123              		.cfi_offset 7, -8
+ 2124              		.cfi_offset 14, -4
+ 2125 0002 00AF     		add	r7, sp, #0
+ 2126              		.cfi_def_cfa_register 7
+ 640:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, 0);
+ 2127              		.loc 1 640 2
+ 2128 0004 0022     		movs	r2, #0
+ 2129 0006 4FF48061 		mov	r1, #1024
+ 2130 000a 0548     		ldr	r0, .L141
+ 2131 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 641:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, 1);
+ 2132              		.loc 1 641 2
+ 2133 0010 0122     		movs	r2, #1
+ 2134 0012 4FF48071 		mov	r1, #256
+ 2135 0016 0348     		ldr	r0, .L141+4
+ 2136 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 642:./Core/Src/input_processing.c **** }
+ 2137              		.loc 1 642 1
+ 2138 001c 00BF     		nop
+ 2139 001e 80BD     		pop	{r7, pc}
+ 2140              	.L142:
+ 2141              		.align	2
+ 2142              	.L141:
+ 2143 0020 000C0140 		.word	1073810432
+ 2144 0024 00080140 		.word	1073809408
+ 2145              		.cfi_endproc
+ 2146              	.LFE75:
+ 2148              		.section	.text.PES_LED_RED,"ax",%progbits
+ 2149              		.align	1
+ 2150              		.global	PES_LED_RED
+ 2151              		.syntax unified
+ 2152              		.thumb
+ 2153              		.thumb_func
+ 2154              		.fpu softvfp
+ 2156              	PES_LED_RED:
+ 2157              	.LFB76:
+ 643:./Core/Src/input_processing.c **** void PES_LED_RED(){
+ 2158              		.loc 1 643 19
+ 2159              		.cfi_startproc
+ 2160              		@ args = 0, pretend = 0, frame = 0
+ 2161              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2162 0000 80B5     		push	{r7, lr}
+ 2163              		.cfi_def_cfa_offset 8
+ 2164              		.cfi_offset 7, -8
+ 2165              		.cfi_offset 14, -4
+ 2166 0002 00AF     		add	r7, sp, #0
+ 2167              		.cfi_def_cfa_register 7
+ 644:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, 1);
+ 2168              		.loc 1 644 2
+ 2169 0004 0122     		movs	r2, #1
+ 2170 0006 4FF48061 		mov	r1, #1024
+ 2171 000a 0548     		ldr	r0, .L144
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 51
+
+
+ 2172 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 645:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, 0);
+ 2173              		.loc 1 645 2
+ 2174 0010 0022     		movs	r2, #0
+ 2175 0012 4FF48071 		mov	r1, #256
+ 2176 0016 0348     		ldr	r0, .L144+4
+ 2177 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 646:./Core/Src/input_processing.c **** }
+ 2178              		.loc 1 646 1
+ 2179 001c 00BF     		nop
+ 2180 001e 80BD     		pop	{r7, pc}
+ 2181              	.L145:
+ 2182              		.align	2
+ 2183              	.L144:
+ 2184 0020 000C0140 		.word	1073810432
+ 2185 0024 00080140 		.word	1073809408
+ 2186              		.cfi_endproc
+ 2187              	.LFE76:
+ 2189              		.section	.text.PES_LED_OFF,"ax",%progbits
+ 2190              		.align	1
+ 2191              		.global	PES_LED_OFF
+ 2192              		.syntax unified
+ 2193              		.thumb
+ 2194              		.thumb_func
+ 2195              		.fpu softvfp
+ 2197              	PES_LED_OFF:
+ 2198              	.LFB77:
+ 647:./Core/Src/input_processing.c **** void PES_LED_OFF(){
+ 2199              		.loc 1 647 19
+ 2200              		.cfi_startproc
+ 2201              		@ args = 0, pretend = 0, frame = 0
+ 2202              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2203 0000 80B5     		push	{r7, lr}
+ 2204              		.cfi_def_cfa_offset 8
+ 2205              		.cfi_offset 7, -8
+ 2206              		.cfi_offset 14, -4
+ 2207 0002 00AF     		add	r7, sp, #0
+ 2208              		.cfi_def_cfa_register 7
+ 648:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, 0);
+ 2209              		.loc 1 648 2
+ 2210 0004 0022     		movs	r2, #0
+ 2211 0006 4FF48061 		mov	r1, #1024
+ 2212 000a 0548     		ldr	r0, .L147
+ 2213 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 649:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, 0);
+ 2214              		.loc 1 649 2
+ 2215 0010 0022     		movs	r2, #0
+ 2216 0012 4FF48071 		mov	r1, #256
+ 2217 0016 0348     		ldr	r0, .L147+4
+ 2218 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 650:./Core/Src/input_processing.c **** }
+ 2219              		.loc 1 650 1
+ 2220 001c 00BF     		nop
+ 2221 001e 80BD     		pop	{r7, pc}
+ 2222              	.L148:
+ 2223              		.align	2
+ 2224              	.L147:
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 52
+
+
+ 2225 0020 000C0140 		.word	1073810432
+ 2226 0024 00080140 		.word	1073809408
+ 2227              		.cfi_endproc
+ 2228              	.LFE77:
+ 2230              		.section	.text.turnOnGreen1,"ax",%progbits
+ 2231              		.align	1
+ 2232              		.global	turnOnGreen1
+ 2233              		.syntax unified
+ 2234              		.thumb
+ 2235              		.thumb_func
+ 2236              		.fpu softvfp
+ 2238              	turnOnGreen1:
+ 2239              	.LFB78:
+ 651:./Core/Src/input_processing.c **** void turnOnGreen1(){
+ 2240              		.loc 1 651 20
+ 2241              		.cfi_startproc
+ 2242              		@ args = 0, pretend = 0, frame = 0
+ 2243              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2244 0000 80B5     		push	{r7, lr}
+ 2245              		.cfi_def_cfa_offset 8
+ 2246              		.cfi_offset 7, -8
+ 2247              		.cfi_offset 14, -4
+ 2248 0002 00AF     		add	r7, sp, #0
+ 2249              		.cfi_def_cfa_register 7
+ 652:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D2_GPIO_Port, D2_Pin, 0);
+ 2250              		.loc 1 652 2
+ 2251 0004 0022     		movs	r2, #0
+ 2252 0006 4FF48061 		mov	r1, #1024
+ 2253 000a 0548     		ldr	r0, .L150
+ 2254 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 653:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D3_GPIO_Port, D3_Pin, 1);
+ 2255              		.loc 1 653 2
+ 2256 0010 0122     		movs	r2, #1
+ 2257 0012 0821     		movs	r1, #8
+ 2258 0014 0348     		ldr	r0, .L150+4
+ 2259 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 654:./Core/Src/input_processing.c **** }
+ 2260              		.loc 1 654 1
+ 2261 001a 00BF     		nop
+ 2262 001c 80BD     		pop	{r7, pc}
+ 2263              	.L151:
+ 2264 001e 00BF     		.align	2
+ 2265              	.L150:
+ 2266 0020 00080140 		.word	1073809408
+ 2267 0024 000C0140 		.word	1073810432
+ 2268              		.cfi_endproc
+ 2269              	.LFE78:
+ 2271              		.section	.text.turnOnRed1,"ax",%progbits
+ 2272              		.align	1
+ 2273              		.global	turnOnRed1
+ 2274              		.syntax unified
+ 2275              		.thumb
+ 2276              		.thumb_func
+ 2277              		.fpu softvfp
+ 2279              	turnOnRed1:
+ 2280              	.LFB79:
+ 655:./Core/Src/input_processing.c **** void turnOnRed1(){
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 53
+
+
+ 2281              		.loc 1 655 18
+ 2282              		.cfi_startproc
+ 2283              		@ args = 0, pretend = 0, frame = 0
+ 2284              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2285 0000 80B5     		push	{r7, lr}
+ 2286              		.cfi_def_cfa_offset 8
+ 2287              		.cfi_offset 7, -8
+ 2288              		.cfi_offset 14, -4
+ 2289 0002 00AF     		add	r7, sp, #0
+ 2290              		.cfi_def_cfa_register 7
+ 656:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D2_GPIO_Port, D2_Pin, 1);
+ 2291              		.loc 1 656 2
+ 2292 0004 0122     		movs	r2, #1
+ 2293 0006 4FF48061 		mov	r1, #1024
+ 2294 000a 0548     		ldr	r0, .L153
+ 2295 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 657:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D3_GPIO_Port, D3_Pin, 0);
+ 2296              		.loc 1 657 2
+ 2297 0010 0022     		movs	r2, #0
+ 2298 0012 0821     		movs	r1, #8
+ 2299 0014 0348     		ldr	r0, .L153+4
+ 2300 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 658:./Core/Src/input_processing.c **** }
+ 2301              		.loc 1 658 1
+ 2302 001a 00BF     		nop
+ 2303 001c 80BD     		pop	{r7, pc}
+ 2304              	.L154:
+ 2305 001e 00BF     		.align	2
+ 2306              	.L153:
+ 2307 0020 00080140 		.word	1073809408
+ 2308 0024 000C0140 		.word	1073810432
+ 2309              		.cfi_endproc
+ 2310              	.LFE79:
+ 2312              		.section	.text.turnOnYellow1,"ax",%progbits
+ 2313              		.align	1
+ 2314              		.global	turnOnYellow1
+ 2315              		.syntax unified
+ 2316              		.thumb
+ 2317              		.thumb_func
+ 2318              		.fpu softvfp
+ 2320              	turnOnYellow1:
+ 2321              	.LFB80:
+ 659:./Core/Src/input_processing.c **** void turnOnYellow1(){
+ 2322              		.loc 1 659 21
+ 2323              		.cfi_startproc
+ 2324              		@ args = 0, pretend = 0, frame = 0
+ 2325              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2326 0000 80B5     		push	{r7, lr}
+ 2327              		.cfi_def_cfa_offset 8
+ 2328              		.cfi_offset 7, -8
+ 2329              		.cfi_offset 14, -4
+ 2330 0002 00AF     		add	r7, sp, #0
+ 2331              		.cfi_def_cfa_register 7
+ 660:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D2_GPIO_Port, D2_Pin, 1);
+ 2332              		.loc 1 660 2
+ 2333 0004 0122     		movs	r2, #1
+ 2334 0006 4FF48061 		mov	r1, #1024
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 54
+
+
+ 2335 000a 0548     		ldr	r0, .L156
+ 2336 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 661:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D3_GPIO_Port, D3_Pin, 1);
+ 2337              		.loc 1 661 2
+ 2338 0010 0122     		movs	r2, #1
+ 2339 0012 0821     		movs	r1, #8
+ 2340 0014 0348     		ldr	r0, .L156+4
+ 2341 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 662:./Core/Src/input_processing.c **** }
+ 2342              		.loc 1 662 1
+ 2343 001a 00BF     		nop
+ 2344 001c 80BD     		pop	{r7, pc}
+ 2345              	.L157:
+ 2346 001e 00BF     		.align	2
+ 2347              	.L156:
+ 2348 0020 00080140 		.word	1073809408
+ 2349 0024 000C0140 		.word	1073810432
+ 2350              		.cfi_endproc
+ 2351              	.LFE80:
+ 2353              		.section	.text.turnOff1,"ax",%progbits
+ 2354              		.align	1
+ 2355              		.global	turnOff1
+ 2356              		.syntax unified
+ 2357              		.thumb
+ 2358              		.thumb_func
+ 2359              		.fpu softvfp
+ 2361              	turnOff1:
+ 2362              	.LFB81:
+ 663:./Core/Src/input_processing.c **** void turnOff1(){
+ 2363              		.loc 1 663 16
+ 2364              		.cfi_startproc
+ 2365              		@ args = 0, pretend = 0, frame = 0
+ 2366              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2367 0000 80B5     		push	{r7, lr}
+ 2368              		.cfi_def_cfa_offset 8
+ 2369              		.cfi_offset 7, -8
+ 2370              		.cfi_offset 14, -4
+ 2371 0002 00AF     		add	r7, sp, #0
+ 2372              		.cfi_def_cfa_register 7
+ 664:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D2_GPIO_Port, D2_Pin, 0);
+ 2373              		.loc 1 664 2
+ 2374 0004 0022     		movs	r2, #0
+ 2375 0006 4FF48061 		mov	r1, #1024
+ 2376 000a 0548     		ldr	r0, .L159
+ 2377 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 665:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D3_GPIO_Port, D3_Pin, 0);
+ 2378              		.loc 1 665 2
+ 2379 0010 0022     		movs	r2, #0
+ 2380 0012 0821     		movs	r1, #8
+ 2381 0014 0348     		ldr	r0, .L159+4
+ 2382 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 666:./Core/Src/input_processing.c **** }
+ 2383              		.loc 1 666 1
+ 2384 001a 00BF     		nop
+ 2385 001c 80BD     		pop	{r7, pc}
+ 2386              	.L160:
+ 2387 001e 00BF     		.align	2
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 55
+
+
+ 2388              	.L159:
+ 2389 0020 00080140 		.word	1073809408
+ 2390 0024 000C0140 		.word	1073810432
+ 2391              		.cfi_endproc
+ 2392              	.LFE81:
+ 2394              		.section	.text.turnOnGreen2,"ax",%progbits
+ 2395              		.align	1
+ 2396              		.global	turnOnGreen2
+ 2397              		.syntax unified
+ 2398              		.thumb
+ 2399              		.thumb_func
+ 2400              		.fpu softvfp
+ 2402              	turnOnGreen2:
+ 2403              	.LFB82:
+ 667:./Core/Src/input_processing.c **** void turnOnGreen2(){
+ 2404              		.loc 1 667 20
+ 2405              		.cfi_startproc
+ 2406              		@ args = 0, pretend = 0, frame = 0
+ 2407              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2408 0000 80B5     		push	{r7, lr}
+ 2409              		.cfi_def_cfa_offset 8
+ 2410              		.cfi_offset 7, -8
+ 2411              		.cfi_offset 14, -4
+ 2412 0002 00AF     		add	r7, sp, #0
+ 2413              		.cfi_def_cfa_register 7
+ 668:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, 0);
+ 2414              		.loc 1 668 2
+ 2415 0004 0022     		movs	r2, #0
+ 2416 0006 2021     		movs	r1, #32
+ 2417 0008 0448     		ldr	r0, .L162
+ 2418 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 669:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, 1);
+ 2419              		.loc 1 669 2
+ 2420 000e 0122     		movs	r2, #1
+ 2421 0010 1021     		movs	r1, #16
+ 2422 0012 0248     		ldr	r0, .L162
+ 2423 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 670:./Core/Src/input_processing.c **** }
+ 2424              		.loc 1 670 1
+ 2425 0018 00BF     		nop
+ 2426 001a 80BD     		pop	{r7, pc}
+ 2427              	.L163:
+ 2428              		.align	2
+ 2429              	.L162:
+ 2430 001c 000C0140 		.word	1073810432
+ 2431              		.cfi_endproc
+ 2432              	.LFE82:
+ 2434              		.section	.text.turnOnRed2,"ax",%progbits
+ 2435              		.align	1
+ 2436              		.global	turnOnRed2
+ 2437              		.syntax unified
+ 2438              		.thumb
+ 2439              		.thumb_func
+ 2440              		.fpu softvfp
+ 2442              	turnOnRed2:
+ 2443              	.LFB83:
+ 671:./Core/Src/input_processing.c **** void turnOnRed2(){
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 56
+
+
+ 2444              		.loc 1 671 18
+ 2445              		.cfi_startproc
+ 2446              		@ args = 0, pretend = 0, frame = 0
+ 2447              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2448 0000 80B5     		push	{r7, lr}
+ 2449              		.cfi_def_cfa_offset 8
+ 2450              		.cfi_offset 7, -8
+ 2451              		.cfi_offset 14, -4
+ 2452 0002 00AF     		add	r7, sp, #0
+ 2453              		.cfi_def_cfa_register 7
+ 672:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, 1);
+ 2454              		.loc 1 672 2
+ 2455 0004 0122     		movs	r2, #1
+ 2456 0006 2021     		movs	r1, #32
+ 2457 0008 0448     		ldr	r0, .L165
+ 2458 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 673:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, 0);
+ 2459              		.loc 1 673 2
+ 2460 000e 0022     		movs	r2, #0
+ 2461 0010 1021     		movs	r1, #16
+ 2462 0012 0248     		ldr	r0, .L165
+ 2463 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 674:./Core/Src/input_processing.c **** }
+ 2464              		.loc 1 674 1
+ 2465 0018 00BF     		nop
+ 2466 001a 80BD     		pop	{r7, pc}
+ 2467              	.L166:
+ 2468              		.align	2
+ 2469              	.L165:
+ 2470 001c 000C0140 		.word	1073810432
+ 2471              		.cfi_endproc
+ 2472              	.LFE83:
+ 2474              		.section	.text.turnOnYellow2,"ax",%progbits
+ 2475              		.align	1
+ 2476              		.global	turnOnYellow2
+ 2477              		.syntax unified
+ 2478              		.thumb
+ 2479              		.thumb_func
+ 2480              		.fpu softvfp
+ 2482              	turnOnYellow2:
+ 2483              	.LFB84:
+ 675:./Core/Src/input_processing.c **** void turnOnYellow2(){
+ 2484              		.loc 1 675 21
+ 2485              		.cfi_startproc
+ 2486              		@ args = 0, pretend = 0, frame = 0
+ 2487              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2488 0000 80B5     		push	{r7, lr}
+ 2489              		.cfi_def_cfa_offset 8
+ 2490              		.cfi_offset 7, -8
+ 2491              		.cfi_offset 14, -4
+ 2492 0002 00AF     		add	r7, sp, #0
+ 2493              		.cfi_def_cfa_register 7
+ 676:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, 1);
+ 2494              		.loc 1 676 2
+ 2495 0004 0122     		movs	r2, #1
+ 2496 0006 2021     		movs	r1, #32
+ 2497 0008 0448     		ldr	r0, .L168
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 57
+
+
+ 2498 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 677:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, 1);
+ 2499              		.loc 1 677 2
+ 2500 000e 0122     		movs	r2, #1
+ 2501 0010 1021     		movs	r1, #16
+ 2502 0012 0248     		ldr	r0, .L168
+ 2503 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 678:./Core/Src/input_processing.c **** }
+ 2504              		.loc 1 678 1
+ 2505 0018 00BF     		nop
+ 2506 001a 80BD     		pop	{r7, pc}
+ 2507              	.L169:
+ 2508              		.align	2
+ 2509              	.L168:
+ 2510 001c 000C0140 		.word	1073810432
+ 2511              		.cfi_endproc
+ 2512              	.LFE84:
+ 2514              		.section	.text.turnOff2,"ax",%progbits
+ 2515              		.align	1
+ 2516              		.global	turnOff2
+ 2517              		.syntax unified
+ 2518              		.thumb
+ 2519              		.thumb_func
+ 2520              		.fpu softvfp
+ 2522              	turnOff2:
+ 2523              	.LFB85:
+ 679:./Core/Src/input_processing.c **** void turnOff2(){
+ 2524              		.loc 1 679 16
+ 2525              		.cfi_startproc
+ 2526              		@ args = 0, pretend = 0, frame = 0
+ 2527              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2528 0000 80B5     		push	{r7, lr}
+ 2529              		.cfi_def_cfa_offset 8
+ 2530              		.cfi_offset 7, -8
+ 2531              		.cfi_offset 14, -4
+ 2532 0002 00AF     		add	r7, sp, #0
+ 2533              		.cfi_def_cfa_register 7
+ 680:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, 0);
+ 2534              		.loc 1 680 2
+ 2535 0004 0022     		movs	r2, #0
+ 2536 0006 2021     		movs	r1, #32
+ 2537 0008 0448     		ldr	r0, .L171
+ 2538 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 681:./Core/Src/input_processing.c **** 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, 0);
+ 2539              		.loc 1 681 2
+ 2540 000e 0022     		movs	r2, #0
+ 2541 0010 1021     		movs	r1, #16
+ 2542 0012 0248     		ldr	r0, .L171
+ 2543 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 682:./Core/Src/input_processing.c **** }
+ 2544              		.loc 1 682 1
+ 2545 0018 00BF     		nop
+ 2546 001a 80BD     		pop	{r7, pc}
+ 2547              	.L172:
+ 2548              		.align	2
+ 2549              	.L171:
+ 2550 001c 000C0140 		.word	1073810432
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 58
+
+
+ 2551              		.cfi_endproc
+ 2552              	.LFE85:
+ 2554              		.section	.text.update_led_buffer,"ax",%progbits
+ 2555              		.align	1
+ 2556              		.global	update_led_buffer
+ 2557              		.syntax unified
+ 2558              		.thumb
+ 2559              		.thumb_func
+ 2560              		.fpu softvfp
+ 2562              	update_led_buffer:
+ 2563              	.LFB86:
+ 683:./Core/Src/input_processing.c **** void update_led_buffer(int val){
+ 2564              		.loc 1 683 32
+ 2565              		.cfi_startproc
+ 2566              		@ args = 0, pretend = 0, frame = 8
+ 2567              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2568              		@ link register save eliminated.
+ 2569 0000 80B4     		push	{r7}
+ 2570              		.cfi_def_cfa_offset 4
+ 2571              		.cfi_offset 7, -4
+ 2572 0002 83B0     		sub	sp, sp, #12
+ 2573              		.cfi_def_cfa_offset 16
+ 2574 0004 00AF     		add	r7, sp, #0
+ 2575              		.cfi_def_cfa_register 7
+ 2576 0006 7860     		str	r0, [r7, #4]
+ 684:./Core/Src/input_processing.c **** 	led_buffer1[0]=val/10;
+ 2577              		.loc 1 684 20
+ 2578 0008 7B68     		ldr	r3, [r7, #4]
+ 2579 000a 0D4A     		ldr	r2, .L174
+ 2580 000c 82FB0312 		smull	r1, r2, r2, r3
+ 2581 0010 9210     		asrs	r2, r2, #2
+ 2582 0012 DB17     		asrs	r3, r3, #31
+ 2583 0014 D31A     		subs	r3, r2, r3
+ 2584              		.loc 1 684 16
+ 2585 0016 0B4A     		ldr	r2, .L174+4
+ 2586 0018 1360     		str	r3, [r2]
+ 685:./Core/Src/input_processing.c **** 	led_buffer1[1]=val%10;
+ 2587              		.loc 1 685 20
+ 2588 001a 7968     		ldr	r1, [r7, #4]
+ 2589 001c 084B     		ldr	r3, .L174
+ 2590 001e 83FB0123 		smull	r2, r3, r3, r1
+ 2591 0022 9A10     		asrs	r2, r3, #2
+ 2592 0024 CB17     		asrs	r3, r1, #31
+ 2593 0026 D21A     		subs	r2, r2, r3
+ 2594 0028 1346     		mov	r3, r2
+ 2595 002a 9B00     		lsls	r3, r3, #2
+ 2596 002c 1344     		add	r3, r3, r2
+ 2597 002e 5B00     		lsls	r3, r3, #1
+ 2598 0030 CA1A     		subs	r2, r1, r3
+ 2599              		.loc 1 685 16
+ 2600 0032 044B     		ldr	r3, .L174+4
+ 2601 0034 5A60     		str	r2, [r3, #4]
+ 686:./Core/Src/input_processing.c **** }
+ 2602              		.loc 1 686 1
+ 2603 0036 00BF     		nop
+ 2604 0038 0C37     		adds	r7, r7, #12
+ 2605              		.cfi_def_cfa_offset 4
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 59
+
+
+ 2606 003a BD46     		mov	sp, r7
+ 2607              		.cfi_def_cfa_register 13
+ 2608              		@ sp needed
+ 2609 003c 80BC     		pop	{r7}
+ 2610              		.cfi_restore 7
+ 2611              		.cfi_def_cfa_offset 0
+ 2612 003e 7047     		bx	lr
+ 2613              	.L175:
+ 2614              		.align	2
+ 2615              	.L174:
+ 2616 0040 67666666 		.word	1717986919
+ 2617 0044 00000000 		.word	led_buffer1
+ 2618              		.cfi_endproc
+ 2619              	.LFE86:
+ 2621              		.global	toggle_state
+ 2622              		.section	.bss.toggle_state,"aw",%nobits
+ 2623              		.align	2
+ 2626              	toggle_state:
+ 2627 0000 00000000 		.space	4
+ 2628              		.text
+ 2629              	.Letext0:
+ 2630              		.file 2 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 2631              		.file 3 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 2632              		.file 4 "Drivers/CMSIS/Include/core_cm3.h"
+ 2633              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 2634              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 2635              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 2636              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 2637              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h"
+ 2638              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h"
+ 2639              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 2640              		.file 12 "Core/Inc/input_processing.h"
+ 2641              		.file 13 "Core/Inc/SoftwareTimer.h"
+ 2642              		.file 14 "Core/Inc/global.h"
+ 2643              		.file 15 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltool
+ 2644              		.file 16 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltool
+ 2645              		.file 17 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltool
+ 2646              		.file 18 "c:\\st\\stm32cubeide_1.7.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltool
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 60
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 input_processing.c
+                            *COM*:0000000000000004 RED_DURATION
+                            *COM*:0000000000000004 YELLOW_DURATION
+                            *COM*:0000000000000004 GREEN_DURATION
+                            *COM*:0000000000000004 pes_led_period
+                            *COM*:0000000000000004 pes_led_count
+                            *COM*:0000000000000004 red_temp_dur
+                            *COM*:0000000000000004 yellow_temp_dur
+                            *COM*:0000000000000004 green_temp_dur
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:27     .bss.state:0000000000000000 state
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:28     .bss.state:0000000000000000 $d
+                            *COM*:0000000000000001 current_led_way1
+                            *COM*:000000000000000c leds_way1_count
+                            *COM*:0000000000000001 current_led_way2
+                            *COM*:000000000000000c leds_way2_count
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:38     .bss.button1_executed:0000000000000000 button1_executed
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:35     .bss.button1_executed:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:45     .bss.button2_increase1:0000000000000000 button2_increase1
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:42     .bss.button2_increase1:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:52     .bss.flag_pes:0000000000000000 flag_pes
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:49     .bss.flag_pes:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:59     .bss.button4_executed:0000000000000000 button4_executed
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:56     .bss.button4_executed:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:66     .bss.led_state:0000000000000000 led_state
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:63     .bss.led_state:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:73     .bss.print:0000000000000000 print
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:70     .bss.print:0000000000000000 $d
+                            *COM*:0000000000000001 LedToChange
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:81     .rodata.MAX_LED:0000000000000000 MAX_LED
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:78     .rodata.MAX_LED:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:88     .bss.index_7SEGLed:0000000000000000 index_7SEGLed
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:85     .bss.index_7SEGLed:0000000000000000 $d
+                            *COM*:0000000000000008 led_buffer1
+                            *COM*:0000000000000008 led_buffer2
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:93     .rodata:0000000000000000 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:97     .text.fsm_for_input_processing:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:105    .text.fsm_for_input_processing:0000000000000000 fsm_for_input_processing
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:131    .text.fsm_for_input_processing:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:139    .text.fsm_for_input_processing:000000000000003c $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1985   .text.turnOffSingleLed:0000000000000000 turnOffSingleLed
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2279   .text.turnOnRed1:0000000000000000 turnOnRed1
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2402   .text.turnOnGreen2:0000000000000000 turnOnGreen2
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2197   .text.PES_LED_OFF:0000000000000000 PES_LED_OFF
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1844   .text.trafficLightCount:0000000000000000 trafficLightCount
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1759   .text.displaySingleLedsMode1:0000000000000000 displaySingleLedsMode1
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2562   .text.update_led_buffer:0000000000000000 update_led_buffer
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2115   .text.PES_LED_ON:0000000000000000 PES_LED_ON
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:487    .text.fsm_for_input_processing:0000000000000264 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2156   .text.PES_LED_RED:0000000000000000 PES_LED_RED
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:512    .text.fsm_for_input_processing:00000000000002c0 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2442   .text.turnOnRed2:0000000000000000 turnOnRed2
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2361   .text.turnOff1:0000000000000000 turnOff1
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2522   .text.turnOff2:0000000000000000 turnOff2
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2238   .text.turnOnGreen1:0000000000000000 turnOnGreen1
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:909    .text.fsm_for_input_processing:0000000000000528 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:928    .text.fsm_for_input_processing:000000000000056c $t
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 61
+
+
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2320   .text.turnOnYellow1:0000000000000000 turnOnYellow1
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2482   .text.turnOnYellow2:0000000000000000 turnOnYellow2
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2015   .text.ledBlinking:0000000000000000 ledBlinking
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1549   .text.increaseTempDur:0000000000000000 increaseTempDur
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1360   .text.fsm_for_input_processing:000000000000080c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1376   .text.fsm_for_input_processing:0000000000000844 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1674   .text.updateDuration:0000000000000000 updateDuration
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1530   .text.fsm_for_input_processing:0000000000000920 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1542   .text.increaseTempDur:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1660   .text.increaseTempDur:0000000000000080 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1667   .text.updateDuration:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1742   .text.updateDuration:0000000000000048 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1752   .text.displaySingleLedsMode1:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1831   .text.displaySingleLedsMode1:0000000000000050 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1837   .text.trafficLightCount:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1971   .text.trafficLightCount:0000000000000098 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:1978   .text.turnOffSingleLed:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2008   .text.ledBlinking:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2103   .text.ledBlinking:000000000000006c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2108   .text.PES_LED_ON:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2143   .text.PES_LED_ON:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2149   .text.PES_LED_RED:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2184   .text.PES_LED_RED:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2190   .text.PES_LED_OFF:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2225   .text.PES_LED_OFF:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2231   .text.turnOnGreen1:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2266   .text.turnOnGreen1:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2272   .text.turnOnRed1:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2307   .text.turnOnRed1:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2313   .text.turnOnYellow1:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2348   .text.turnOnYellow1:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2354   .text.turnOff1:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2389   .text.turnOff1:0000000000000020 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2395   .text.turnOnGreen2:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2430   .text.turnOnGreen2:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2435   .text.turnOnRed2:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2470   .text.turnOnRed2:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2475   .text.turnOnYellow2:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2510   .text.turnOnYellow2:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2515   .text.turnOff2:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2550   .text.turnOff2:000000000000001c $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2555   .text.update_led_buffer:0000000000000000 $t
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2616   .text.update_led_buffer:0000000000000040 $d
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2626   .bss.toggle_state:0000000000000000 toggle_state
+C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s:2623   .bss.toggle_state:0000000000000000 $d
+                           .group:0000000000000000 wm4.0.e890922d021f7fff2fbf219cb2b38f03
+                           .group:0000000000000000 wm4.stm32f1xx_hal_conf.h.22.844a2f06328adeab13e6d7f89c6deb9b
+                           .group:0000000000000000 wm4.stm32f1xx.h.39.208bb8a61c892b7c37d899c49a031330
+                           .group:0000000000000000 wm4.stm32f103xb.h.38.ec967d5ad9d3269cb0788eebda048e38
+                           .group:0000000000000000 wm4._newlib_version.h.4.1ef4e12f167f8b69d7c30054be56050d
+                           .group:0000000000000000 wm4.features.h.33.318b64d71e0957639cfb30f1db1f7ec8
+                           .group:0000000000000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:0000000000000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:0000000000000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:0000000000000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:0000000000000000 wm4.cmsis_version.h.32.4d5822004c01a829a975260e854b5f8e
+                           .group:0000000000000000 wm4.core_cm3.h.66.fc46cac19810db8f98d67da7ef88f42c
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 62
+
+
+                           .group:0000000000000000 wm4.cmsis_gcc.h.26.225e4f5469716fdeef823d1102f5b23e
+                           .group:0000000000000000 wm4.core_cm3.h.127.f4474120f1a7524deb56f9d74ff175da
+                           .group:0000000000000000 wm4.stm32f103xb.h.573.10249aa7473ca93be896fed94046a725
+                           .group:0000000000000000 wm4.stm32f1xx.h.162.96b09079a093c34dbd7f0b85cbd0ddee
+                           .group:0000000000000000 wm4.stm32_hal_legacy.h.23.91ba5b544a4c2be2620a1e7ff0049e10
+                           .group:0000000000000000 wm4.stddef.h.39.144cf5ddcd53cbfdac30259dc1a6c87f
+                           .group:0000000000000000 wm4.stm32f1xx_hal_def.h.57.18d01ce1aa74e9fb44dbf16f821a574a
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc.h.95.21591bbc513aaa813c0b8640c3b32517
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc_ex.h.22.8763f99bc1e3e2dcf0febe9161d81b37
+                           .group:0000000000000000 wm4.stm32f1xx_hal_rcc.h.1202.f8e5f9e0cf4eef7840facf5396029056
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio.h.22.fa638d688dcc57ca806fe6a7831b0d04
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio_ex.h.22.51a50ef3512cd78017ce666a32d364bf
+                           .group:0000000000000000 wm4.stm32f1xx_hal_gpio.h.263.f5ebf2f545ade59412ab9261c8e35dc4
+                           .group:0000000000000000 wm4.stm32f1xx_hal_exti.h.22.e26491d042c8079c3ca67eca341af862
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma.h.22.3c14338534886827bf3aeaa2a7f412a1
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma_ex.h.22.001ac4d7f81ccbdcae49bd65c13858c8
+                           .group:0000000000000000 wm4.stm32f1xx_hal_dma.h.409.cafcd2cfe701091535636be537c18293
+                           .group:0000000000000000 wm4.stm32f1xx_hal_cortex.h.22.b5f4174bb6a50d95405567b8f50e0900
+                           .group:0000000000000000 wm4.stm32f1xx_hal_flash.h.22.5cea9a7210e6315b41724b47b5fdf203
+                           .group:0000000000000000 wm4.stm32f1xx_hal_flash_ex.h.22.d4e19c21f2a86fa2f8ec2c2d5f1ab2af
+                           .group:0000000000000000 wm4.stm32f1xx_hal_pwr.h.22.3438c476faafc3240bf146f143df3fcd
+                           .group:0000000000000000 wm4.stm32f1xx_hal_tim.h.22.a16e206564e97dbace9faae59a0d6008
+                           .group:0000000000000000 wm4.stm32f1xx_hal_uart.h.22.5f7992e497faa36aa98f09f7214f4dbb
+                           .group:0000000000000000 wm4.stm32f1xx_hal.h.88.91065c0692bed6019c34f1e9c00589fd
+                           .group:0000000000000000 wm4.main.h.63.5431060b74a10c9c4e0db1c5d549add8
+                           .group:0000000000000000 wm4.button.h.13.96c13931ad5bdf898c162642e02d1e55
+                           .group:0000000000000000 wm4.newlib.h.8.7cb3972cd43265932d4782d5eb589854
+                           .group:0000000000000000 wm4.ieeefp.h.77.f33a4dce62116f6f5175ff8bae57a54c
+                           .group:0000000000000000 wm4.config.h.224.c701144a7b0518c6ee9b9b5465b79f81
+                           .group:0000000000000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:0000000000000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:0000000000000000 wm4.stddef.h.155.ba788add86a0e365f264484f110c3c29
+                           .group:0000000000000000 wm4.cdefs.h.49.75c8cf0da02add7669d4e6b77e254feb
+                           .group:0000000000000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:0000000000000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:0000000000000000 wm4.stddef.h.155.3588ebfdd1e8c7ede80509bb9c3b8009
+                           .group:0000000000000000 wm4._types.h.127.34941de1b2539d59d5cac00e0dd27a45
+                           .group:0000000000000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:0000000000000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:0000000000000000 wm4.reent.h.77.dcd6129ff07fe81bd5636db29abe53b2
+                           .group:0000000000000000 wm4.types.h.40.8b6acba56cefbb11746718204edc8f5e
+                           .group:0000000000000000 wm4._endian.h.31.65a10590763c3dde1ac4a7f66d7d4891
+                           .group:0000000000000000 wm4.endian.h.9.49f3a4695c1b61e8a0808de3c4a106cb
+                           .group:0000000000000000 wm4._timeval.h.32.bec3221fa7a9bb0bdde696c9c57e47d2
+                           .group:0000000000000000 wm4.timespec.h.41.d855182eb0e690443ab8651bcedca6e1
+                           .group:0000000000000000 wm4.select.h.19.97ca6fd0c752a0f3b6719fd314d361e6
+                           .group:0000000000000000 wm4.types.h.51.5571ec98f267d17d3c670b7a3ba33afa
+                           .group:0000000000000000 wm4.sched.h.22.c60982713a5c428609783c78f9c78d95
+                           .group:0000000000000000 wm4._pthreadtypes.h.36.fcee9961c35163dde6267ef772ad1972
+                           .group:0000000000000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:0000000000000000 wm4.stdio.h.81.932d0c162786b883f622b8d05c120c78
+
+UNDEFINED SYMBOLS
+setTimer4
+sprintf
+HAL_UART_Transmit
+button1_pressed
+ARM GAS  C:\Users\DELL\AppData\Local\Temp\ccZP3Y3x.s 			page 63
+
+
+setTimer1
+button4_pressed
+setTimer2
+timer4_flag
+traffic_light_num
+timer2_flag
+pwm
+button3_pressed
+button2_pressed
+timer1_flag
+button2_pressed_1s
+setTimer3
+timer3_flag
+HAL_GPIO_WritePin
