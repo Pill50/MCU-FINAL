@@ -111,6 +111,7 @@ int main(void)
   while (1)
   {
 	  fsm_for_input_processing(&huart2, &htim3);
+	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, pwm);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
