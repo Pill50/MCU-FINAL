@@ -194,6 +194,7 @@ void fsm_for_input_processing(UART_HandleTypeDef*huart,TIM_HandleTypeDef*htim3){
 				PES_LED_OFF();
 				pwm = 0;
 				flag_pes=0;
+				__HAL_TIM_SetCompare(htim3, TIM_CHANNEL_1, 0);
 			}
 		}
 		/* PES LED EXCUTION END */
