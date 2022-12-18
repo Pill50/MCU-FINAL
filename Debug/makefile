@@ -63,8 +63,8 @@ all: main-build
 main-build: PWM.elf secondary-outputs
 
 # Tool invocations
-PWM.elf PWM.map: $(OBJS) $(USER_OBJS) E:\Preview\MCU-FINAL\STM32F103RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "PWM.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"E:\Preview\MCU-FINAL\STM32F103RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PWM.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+PWM.elf PWM.map: $(OBJS) $(USER_OBJS) D:\BKU\Microprocessor_Microcontroller\Assignment\MCU-FINAL\STM32F103RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "PWM.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\BKU\Microprocessor_Microcontroller\Assignment\MCU-FINAL\STM32F103RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PWM.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
